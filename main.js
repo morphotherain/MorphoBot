@@ -39,6 +39,7 @@ module.exports.loop  = function(){
   if(Game.cpu.generatePixel)
   Game.cpu.generatePixel()
 
+
   //-------------------------------------------------------------------------------------
 	//房间布局
 	//-------------------------------------------------------------------------------------
@@ -108,7 +109,6 @@ module.exports.loop  = function(){
     runBuilder.run(roomName);
     runController.run(roomName);
     runTower.run(roomName);
-    
 
     try { runLinks.run(Game.rooms[roomName]);}   catch (error) 
       { console.log('Error in manageLinks:', error);}
@@ -141,6 +141,7 @@ module.exports.loop  = function(){
           runAttack.run(roomName,roomOutName);
         }
       }
+
       runOutSource.run(roomName, roomOutName);
       runReserver.run(roomName, roomOutName);
     }

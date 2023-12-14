@@ -17,13 +17,16 @@ const DropEnergyManager = {
     },
   
     // 分配能量目标
-    assignTarget: function(creep) {
+    assignTarget: function(creep, MinNum = 0) {
       const targets = creep.room.find(FIND_DROPPED_RESOURCES, {
         filter: resource => resource.resourceType === RESOURCE_ENERGY
       });
   
+      console.log(creep.name, MinNum)
       // 过滤已分配的目标
-      const unassignedTargets = targets.filter(target => !Object.values(Memory.energyTargets[creep.room.name]).includes(target.id) && target.amount>creep.store.getFreeCapacity());
+      const unassignedTargets = targets.filter(
+        target => !Object.values(Memory.energyTargets[creep.room.name]).includes(target.id) && 
+        target.amount>MinNum);
   
       // 如果没有未分配目标，返回 null
       if (!unassignedTargets.length) {
@@ -40,11 +43,11 @@ const DropEnergyManager = {
     },
   
     // 执行拾取动作
-    pickupEnergy: function(creep) {
+    pickupEnergy: function(creep, MinNum = 0) {
       this.initMemory(creep.room.name);
   
       let target = Game.getObjectById(Memory.energyTargets[creep.room.name][creep.name]) ||
-                   this.assignTarget(creep);
+                   this.assignTarget(creep, MinNum);
   
       if (target) {
         var ans = creep.pickup(target)

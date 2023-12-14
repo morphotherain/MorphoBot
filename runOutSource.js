@@ -43,8 +43,8 @@ var runOutSource = {
 
     var creepBodys = {
      harvests:{
-         1:{'work':2,'carry':0,'move':2},
-         2:{'work':3,'carry':1,'move':3},
+         1:{'work':1,'carry':1,'move':1},
+         2:{'work':3,'carry':1,'move':2},
          3:{'work':5,'carry':1,'move':3},
          4:{'work':5,'carry':1,'move':3},
          5:{'work':5,'carry':1,'move':3},
@@ -94,10 +94,10 @@ var runOutSource = {
          2:{"work":2,'carry':3 ,'move':3 },
          3:{"work":2,'carry':8,'move':4 },
          4:{"work":2,'carry':14,'move':7},
-         5:{"work":2,'carry':16,'move':10},
-         6:{"work":2,'carry':16,'move':10},
-         7:{"work":2,'carry':16,'move':10},
-         8:{"work":2,'carry':16,'move':10},
+         5:{"work":2,'carry':16,'move':9},
+         6:{"work":2,'carry':16,'move':9},
+         7:{"work":2,'carry':16,'move':9},
+         8:{"work":2,'carry':16,'move':9},
          priority : creepManage.carrierOutside.priority
       }
     }
@@ -106,7 +106,7 @@ var runOutSource = {
 
    
    var level = Memory.level[roomName]
-   if(level < 3)return;
+   if(level < 1)return;
 
    var memory = utils.getRoomMem(roomName);
    memory.sourceOut = undefined
@@ -169,7 +169,7 @@ var runOutSource = {
 
       var sourceID = ""
       if(!creep.memory.sourceId){
-         sourceID = memory.sourceOut.sourcesID[i]
+         sourceID = memory.sourceOut.sourcesID[i%2]
          creep.memory.sourceId = sourceID
       }
       else{
@@ -213,7 +213,9 @@ var runOutSource = {
       if(creep.store[RESOURCE_ENERGY]>40)
       {
          if(container != null);
-         else Game.rooms[creep.room.name].createConstructionSite(creep.pos, STRUCTURE_CONTAINER);
+         else if(!(creep.pos.findInRange(FIND_CONSTRUCTION_SITES,2,{
+            filter:(s)=>s.structureType == "container"
+         }).length>0)) Game.rooms[creep.room.name].createConstructionSite(creep.pos, STRUCTURE_CONTAINER);
 
          var repair_target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
             filter: object => object.hits < object.hitsMax
@@ -357,11 +359,12 @@ var runOutSource = {
          }
          else
          {
-            if(true){
+            if(true && creep.getActiveBodyparts(WORK)!=0){
                var repair_target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
-                  filter: object => (object.hits < object.hitsMax && object.pos.inRangeTo(creep,3))
+                  filter: object => object.hits < object.hitsMax
                });
                if(repair_target){
+                  creep.repair(repair_target)
                   if(repair_target.hitsMax - repair_target.hits>1000)
                   return;
                }
@@ -391,6 +394,15 @@ var runOutSource = {
             utils.recycleCreep(creep,roomName)
             return;
          }
+         
+         var spawn = Game.getObjectById(roomBuildings.Spawns[0]);
+         const road = creep.pos.lookFor(LOOK_STRUCTURES,{filter:(s)=>s.structureType == "road"})
+         const roadc = creep.pos.lookFor(LOOK_CONSTRUCTION_SITES, {filter:(s)=>s.structureType == "road"})
+         const hasRoad = ((road && road.length && road.length > 0) || (roadc && roadc.length && roadc.length > 0))
+         if(!hasRoad && !creep.spawning)    
+            if(spawn)
+               utils.createRoadBetween(spawn.pos,source.pos)
+ 
          if(creep.room.name != roomSourceName)
          {
             var resMove = utils.moveOverRoomsEX(creep.room.name,roomSourceName,creep)
@@ -403,7 +415,8 @@ var runOutSource = {
                var source = Game.getObjectById(sourceID);
                if(source != null && !creep.spawning)
                {
-                  utils.createRoadBetween(creep.pos,source.pos)
+                  if(spawn)
+                     utils.createRoadBetween(spawn.pos,source.pos)
                }
             }
          }
@@ -439,8 +452,11 @@ var runOutSource = {
    }      
    //孵化矿工
    
+   var times = 1
+   if(level<2)
+      times = 2;
 
-   for(var i = 0;i<memory.sourceOut.harverstsNum;i++){
+   for(var i = 0;i<memory.sourceOut.harverstsNum*times;i++){
       if(Game.creeps[(memory.sourceOut.harversts[0]+i)+"Day"] != undefined)
       {
          var creep = Game.creeps[(memory.sourceOut.harversts[0]+i)+"Day"]
@@ -460,7 +476,22 @@ var runOutSource = {
    }
    //孵化搬运工
    var times = 1
-   if(level<5)
+   if(level<2)
+      times = 0;
+   if(level == 2)
+   {
+      var container = Game.getObjectById(roomBuildings.Containers[2]);
+      if(container != null)
+      {
+         times = 1;   
+      }
+      else
+      {
+         times = 0;
+      }
+                     
+   }
+   if(level>=3 && level<5)
       times = 2;
    if(roomSourceName == "W53N24" || roomSourceName == "W53N26" || roomSourceName == "W54N22" || roomSourceName == "W54N21")
       times = 2;

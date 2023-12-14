@@ -15,8 +15,8 @@ var runSource =
         creepManage = creepManagers.Manage(roomName)
         var creepBodys = {
             harvests:{
-            0:{'work':2,'move':2},
-            1:{'work':2,'move':2},
+            0:{'work':2,'move':1},
+            1:{'work':2,'move':1},
             2:{'work':5,'move':1},
             3:{'work':5,'carry':0,'move':3},
             4:{'work':5,'carry':0,'move':3},
@@ -106,7 +106,7 @@ var runSource =
 
         if(level == 8)
             count = 1;
-        for(var i = 0;i<count;i++){
+        for(var i = 0;i<6;i++){
             if(times > 1)
                 var index = ((i<((source1Num>3)?3:source1Num))?0:1)
             else
@@ -115,19 +115,20 @@ var runSource =
             {
                 creepBodys.harvests.priority = creepBodys.harvests.priority - 2;
                 var creep = Game.creeps[(memory.source.harversts[0]+i)+"Day"]
-                if(level == 2 && creep.getActiveBodyparts(WORK)<5) creep.suicide()
+                if(level == 2 && i<2 && creep.getActiveBodyparts(WORK)<5) creep.suicide()
                 harvest(creep,index)
             }
             if(Game.creeps[(memory.source.harversts[0]+i)+"Night"] != undefined)
             {
                 creepBodys.harvests.priority = creepBodys.harvests.priority - 2;
                 var creep = Game.creeps[(memory.source.harversts[0]+i)+"Night"]
-                if(level == 2 && creep.getActiveBodyparts(WORK)<5) creep.suicide()
+                if(level == 2 && i<2 && creep.getActiveBodyparts(WORK)<5) creep.suicide()
                 harvest(creep,index)
             }
             var creepName = ""
             if(times>1) creepName = (memory.source.harversts[0]+i)
             else        creepName = (memory.source.harversts[0]+i)
+            if(i<count)
             addSpawn(roomName,creepBodys.harvests[level],creepName,creepBodys.harvests.priority)
             
         }
@@ -135,3 +136,10 @@ var runSource =
 }
 
 module.exports = runSource;
+
+function killLowMiners(){
+    for(var i = 0;i<6;i++){
+        var creepd = Game.creeps[(memory.source.harversts[0]+i)+"Day"]
+        var creepn = Game.creeps[(memory.source.harversts[0]+i)+"Night"]
+    }
+}

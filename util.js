@@ -52,6 +52,7 @@ var utils =
           exitPos = this.findExitWithRoad(beginRoomName, endRoomName);
           if (exitPos) {
               // 存储出口位置到内存
+              console.log("正在存储:",exitKey,exitPos)
               Memory.roomExits[exitKey] = exitPos;
           } else {
               // 没有找到合适的出口
@@ -139,9 +140,9 @@ var utils =
     createRoadBetween : function(pos1, pos2) {
       const path = PathFinder.search(pos1, { pos: pos2, range: 1 }, {
           // 忽略道路成本
-          plainCost: 2,
-          swampCost: 2,
-  
+          plainCost: 5,
+          swampCost: 5,
+
           roomCallback: function(roomName) {
               let room = Game.rooms[roomName];
               if (!room) return;
@@ -163,7 +164,15 @@ var utils =
                     // 已存在的道路成本较低
                     costs.set(struct.pos.x, struct.pos.y, 1);
                 }
-            });
+              });
+              // 获取房间内所有己方 Creep
+              const roomCreeps = room.find(FIND_MY_CREEPS);
+            
+              // 遍历所有 Creep 并更新 costMatrix
+              for (const thecreep of roomCreeps) {
+                  costMatrix.set(thecreep.pos.x, thecreep.pos.y, 1);
+                  
+              }
   
               return costs;
           }
@@ -196,7 +205,6 @@ var utils =
         const hasRoad = ((road && road.length && road.length > 0) || (roadc && roadc.length && roadc.length > 0))
 
 
-
         // 1. Creep 在 road 上且内存中有预选缓存路径
         if (creep.memory.cachedPath) {
            var result =  creep.moveByPath(creep.memory.cachedPath);
@@ -208,6 +216,7 @@ var utils =
         // 2. Creep 不在 road 上
         else if (!hasRoad) {
             creep.moveTo(target, { visualizePathStyle: { stroke: '#ffffff' } });
+            this.createRoadBetween(creep.pos, target)
         }
         // 3. Creep 在 road 上但内存中没有缓存路径
         else {
@@ -220,6 +229,8 @@ var utils =
             } else {
                 // 没有缓存路径，重新寻路并缓存路径
                 const path = Room.serializePath(creep.room.findPath(creep.pos, target,{
+                  plainCost:5,
+                  swampCost:5,
                   costCallback: function(roomName, costMatrix) {
 
                     // 获取房间内所有己方 Creep

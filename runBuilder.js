@@ -11,6 +11,10 @@ var theRoomName = ''
 
 var runBuilder = {
     run : function(roomName){
+
+    
+    if(!Game.flags["BuilderSleep"+roomName])Game.rooms[roomName].createFlag(26, 25, "BuilderSleep"+roomName);
+
     creepManage = creepManagers.Manage(roomName)
     var roomBuildings = Memory.rooms[roomName].buildings
 
@@ -87,10 +91,15 @@ var runBuilder = {
 
         var container = Game.getObjectById(containersID[i%2]);
 
-        if(creep.room.energyAvailable != creep.room.energyCapacityAvailable && Memory.energyTargets[creep.room.name][creep.name])
-          Memory.energyTargets[creep.room.name][creep.name] = ""
-        if(creep.room.energyAvailable == creep.room.energyCapacityAvailable  && energyManager.pickupEnergy(creep) != -1  )
+        //if(creep.room.energyAvailable != creep.room.energyCapacityAvailable && Memory.energyTargets[creep.room.name][creep.name])
+        //  Memory.energyTargets[creep.room.name][creep.name] = ""
+        //if(creep.room.energyAvailable == creep.room.energyCapacityAvailable  && energyManager.pickupEnergy(creep) != -1  )
+        // return;
+        console.log(creep.room.energyAvailable,creep.room.energyCapacityAvailable,creep.room.energyAvailable != creep.room.energyCapacityAvailable)
+        if(creep.room.energyAvailable != creep.room.energyCapacityAvailable  && energyManager.pickupEnergy(creep,creep.store.getFreeCapacity()) != -1  )
           return;
+        if(creep.room.energyAvailable == creep.room.energyCapacityAvailable  && energyManager.pickupEnergy(creep, 0) != -1  )
+         return;
         else
         {
           if(container)

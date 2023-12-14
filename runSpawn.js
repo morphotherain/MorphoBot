@@ -42,6 +42,9 @@ var ManageStructure = function(roomName)
 var runSpawn = 
 {
     run : function(roomName){
+
+    if(!Game.flags["carrierSleep"+roomName])Game.rooms[roomName].createFlag(25, 25, "carrierSleep"+roomName);
+
     creepManage = creepManagers.Manage(roomName)
     ManageStructure(roomName)
     var roomBuildings = Memory.rooms[roomName].buildings
@@ -414,7 +417,7 @@ var runSpawn =
     if (!target) {
       {
         transferResourcesToStorage(creep)
-        if(!Game.flags["carrierSleep"+theRoomName])Game.rooms[theRoomName].createFlag(25, 25, "carrierSleep"+theRoomName);
+        if(!Game.flags["carrierSleep"+theRoomName])Game.rooms[theRoomName].createFlag(creep.pos.x, creep.pos.y, "carrierSleep"+theRoomName);
           creep.moveTo(Game.flags["carrierSleep"+theRoomName], { visualizePathStyle: {} });
       }
       return;

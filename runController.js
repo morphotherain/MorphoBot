@@ -15,7 +15,7 @@ var runController = {
     theRoomName = roomName
     var creepBodys = {
       carriers:{
-      0:{'carry':1,'move':1},
+      0:{'carry':2,'move':2 },
       1:{'carry':3,'move':3},
       2:{'carry':6,'move':3},
       3:{'carry':10,'move':5},
@@ -84,17 +84,10 @@ var runController = {
             creep.moveTo(creep.room.storage)
         }
         else{
-          var res = 0;
-          if(creep.room.energyAvailable != creep.room.energyCapacityAvailable && Memory.energyTargets[creep.room.name][creep.name])
-            Memory.energyTargets[creep.room.name][creep.name] = ""
-          if(creep.room.energyAvailable == creep.room.energyCapacityAvailable)
-            res = energyManager.pickupEnergy(creep)
-          else
-            res = -1
-          //console.log("res",res)
-          if(res != -1 ) {
+          if(creep.room.energyAvailable != creep.room.energyCapacityAvailable  && energyManager.pickupEnergy(creep,creep.store.getFreeCapacity()) != -1  )
             return;
-          }
+          if(creep.room.energyAvailable == creep.room.energyCapacityAvailable  && energyManager.pickupEnergy(creep, 0) != -1  )
+            return;
           else
           {
             var containersID = [roomBuildings.Containers[0],roomBuildings.Containers[1]]
@@ -186,7 +179,7 @@ var runController = {
      }
 
      var countC = memory.controller.carriersNum
-     for(var i = 0;i<(countC>2?countC:2);i++){
+     for(var i = 0;i<countC;i++){
        if(Game.creeps[(memory.controller.carriers[0]+i)+"Day"] != undefined)
        {
         var creep = Game.creeps[(memory.controller.carriers[0]+i)+"Day"]
