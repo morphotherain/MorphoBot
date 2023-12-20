@@ -148,7 +148,8 @@ var runBuilder = {
         if(boostCreep(creep,"655470f7989500704d49c2f8"))
           return;
       }
-      const target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES);
+      var target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES,{filter:(s)=>s.structureType != "road"});
+      if(!target) target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES)
       if(target) {
           if(creep.build(target) == ERR_NOT_IN_RANGE) {
               creep.moveTo(target);

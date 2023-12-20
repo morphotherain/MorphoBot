@@ -311,7 +311,14 @@ var runOutSource = {
          carriersNum: 0
       }
    } */
-
+   var findEnergyDropoff = function (creep) {
+      return creep.room.find(FIND_MY_CREEPS, {
+          filter: (creep) => {
+              return (creep.name[0]=='b' &&
+                      creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0)
+          }
+      });
+    }
    
 
    var harvest = function(creep,i){
@@ -495,38 +502,52 @@ var runOutSource = {
                }
                else
                {
-                  var container = Game.getObjectById(roomBuildings.Containers[2]);
-                  if(container != null)
-                  {
-                    if(creep.transfer(container,RESOURCE_ENERGY)==ERR_NOT_IN_RANGE){
-                        //utils.railwayMove(creep,container,1)
-                        creep.moveTo(container)
-                        return;
-                    }
-                    return;
-                  }
-                  var findEnergyDropoff = function (creep) {
-                     return creep.room.find(FIND_MY_CREEPS, {
-                         filter: (creep) => {
-                             return (creep.name[0]=='u' &&
-                                     creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0)
-                         }
-                     });
-                  }      
-                  var targets = findEnergyDropoff(creep)
-                  if(targets[0] != null)
-                  {
-                     targets.sort((a,b) => a.store[RESOURCE_ENERGY]  - b.store[RESOURCE_ENERGY] );
-                     if(creep.transfer(targets[0],RESOURCE_ENERGY)==ERR_NOT_IN_RANGE)
-                        creep.moveTo(targets[0])
-                  }
-                  else{
-                     if(!Game.flags["store"+roomName])Game.rooms[roomName].createFlag(25, 25, "store"+roomName);
-                     var flag = Game.flags["store"+roomName]
-                     if(creep.pos.isEqualTo(flag))
-                        {next = true;creep.drop(RESOURCE_ENERGY);}
+                  var target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES,{filter:(s)=>s.structureType != "road"});
+                  if(!target) target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES)
+                  if(target && creep.getActiveBodyparts(WORK)>0) {
+                     if(creep.build(target) == ERR_NOT_IN_RANGE) {
+                        creep.moveTo(target);
+                     }
                      else
-                        creep.moveTo(flag)
+                     {
+                        creep.moveTo(target);
+                        //creep.moveTo(Game.flags[flag_build_name[theRoomName]])  
+                     }
+                  } 
+                  else{
+                     var container = Game.getObjectById(roomBuildings.Containers[2]);
+                     if(container != null && container.store.getFreeCapacity()>0)
+                     {
+                        if(creep.transfer(container,RESOURCE_ENERGY)==ERR_NOT_IN_RANGE){
+                           //utils.railwayMove(creep,container,1)
+                           creep.moveTo(container)
+                           return;
+                        }
+                        return;
+                     }
+                     var findEnergyDropoff = function (creep) {
+                        return creep.room.find(FIND_MY_CREEPS, {
+                           filter: (creep) => {
+                              return ((creep.name[0]=='u'||creep.name[0]=='b') &&
+                                 creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0)
+                           }
+                        });
+                     }      
+                     var targets = findEnergyDropoff(creep)
+                     if(targets[0] != null)
+                     {
+                        targets.sort((a,b) => a.store[RESOURCE_ENERGY]  - b.store[RESOURCE_ENERGY] );
+                        if(creep.transfer(targets[0],RESOURCE_ENERGY)==ERR_NOT_IN_RANGE)
+                           creep.moveTo(targets[0])
+                     }
+                     else{
+                        if(!Game.flags["store"+roomName])Game.rooms[roomName].createFlag(25, 25, "store"+roomName);
+                        var flag = Game.flags["store"+roomName]
+                        if(creep.pos.isEqualTo(flag))
+                           {next = true;creep.drop(RESOURCE_ENERGY);}
+                        else
+                           creep.moveTo(flag)
+                     }
                   }
                }
             }
@@ -535,12 +556,23 @@ var runOutSource = {
          {
             if(true && creep.getActiveBodyparts(WORK)!=0){
                var repair_target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
-                  filter: object => object.hits < object.hitsMax
+                  filter: object => object.hits < object.hitsMax && object.pos.inRangeTo(creep,2)
                });
                if(repair_target){
                   creep.repair(repair_target)
                   if(repair_target.hitsMax - repair_target.hits>1000)
                      return;
+               }
+               if(true && creep.getActiveBodyparts(WORK)!=0)
+               {
+                  var build_target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES)
+                  if(build_target && creep.room.name != roomName)
+                  {
+                     creep.build(build_target)
+                     creep.moveTo(build_target,{visualizePathStyle:{}})
+                     return;
+                  }
+                  
                }
 
             }
@@ -557,19 +589,7 @@ var runOutSource = {
                creep.moveTo(new RoomPosition(ExitPos.x,ExitPos.y,creep.room.name))
             }
          }
-         if(true && creep.getActiveBodyparts(WORK)!=0)
-         {
-            var build_target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES)
-            if(build_target && creep.room.name != roomName)
-            {
-               creep.build(build_target)
-               creep.moveTo(build_target,{visualizePathStyle:{}})
-               return;
-            }
-            
-         }
-         //harvest(creep,sourceID)
-         return;
+         
       }
       if(!creep.memory.full || next)
       {

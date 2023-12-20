@@ -35,6 +35,7 @@ var creepManage = require('creepManage')
 var creepManagers = {
     run : function(roomName)
     {
+        var roomBuildings = Memory.rooms[roomName].buildings
         let constructureSites = Game.rooms[roomName].find(FIND_CONSTRUCTION_SITES)
         if(constructureSites.length > 0)
         {
@@ -119,6 +120,18 @@ var creepManagers = {
             if(Game.rooms[roomName].storage && Game.rooms[roomName].storage.store["energy"]<50000)
             {
                 Game.rooms[roomName].memory.startUpgrade = false;
+            }
+            var container = Game.getObjectById(roomBuildings.Containers[2])
+            if(container && container.store.getFreeCapacity() == 0)
+            {
+                if(!Memory.rooms[roomName].controller.containerFull)Memory.rooms[roomName].controller.containerFull = 0;
+                Memory.rooms[roomName].controller.containerFull++;
+                if(Memory.rooms[roomName].controller.containerFull > 200)
+                    if(creepManage.controller.upgradersNum>0)creepManage.controller.upgradersNum = creepManage.controller.upgradersNum + 2
+            }
+            if(container && container.store.getFreeCapacity() > 500)
+            {
+                Memory.rooms[roomName].controller.containerFull = 0;
             }
             
         }
