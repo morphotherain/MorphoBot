@@ -35,7 +35,6 @@ const roomRefuge = require('roomRefuge')
 module.exports.loop  = function(){
 
 
-
   if(Game.cpu.generatePixel)
   Game.cpu.generatePixel()
 
@@ -77,9 +76,9 @@ module.exports.loop  = function(){
     console.log("level",Memory.level[roomName])
 
     if(!Memory.lowEnergyTime[roomName])Memory.lowEnergyTime[roomName] = {time : 0};
-    if(!Memory.level[roomName] < 6 && Game.rooms[roomName].energyAvailable<=300) Memory.lowEnergyTime[roomName].time++;
-    if(!Memory.level[roomName] < 6 && Game.rooms[roomName].energyAvailable>300 ) Memory.lowEnergyTime[roomName].time = 0;
-    if(Memory.level[roomName] != 0 && !Memory.level[roomName] < 6 && Memory.lowEnergyTime[roomName].time>200) Memory.level[roomName] = 1;
+    if(!Memory.level[roomName] < 6 && Game.rooms[roomName].energyAvailable<550) Memory.lowEnergyTime[roomName].time++;
+    if(!Memory.level[roomName] < 6 && Game.rooms[roomName].energyAvailable>=550 ) Memory.lowEnergyTime[roomName].time = 0;
+    if(Memory.level[roomName] != 0 && !Memory.level[roomName] < 6 && Memory.lowEnergyTime[roomName].time>500) Memory.level[roomName] = 1;
 
     if(!Memory.level[roomName] >= 6 && Game.rooms[roomName].energyAvailable<=1500) Memory.lowEnergyTime[roomName].time++;
     if(!Memory.level[roomName] >= 6 && Game.rooms[roomName].energyAvailable> 1500 ) Memory.lowEnergyTime[roomName].time = 0;

@@ -120,16 +120,20 @@ var runBuilder = {
         }
       }
     }
-    var saveEnergy = function(creep)
-    {
-     var targets = findEnergyDropoff(creep)
-     
-     targets.sort((a,b) => a.store[RESOURCE_ENERGY]  - b.store[RESOURCE_ENERGY] );
-     if(targets[0] != null)
-     {
-       if(creep.transfer(targets[0],RESOURCE_ENERGY)==ERR_NOT_IN_RANGE)
-        creep.moveTo(targets[0])
-     }
+    var saveEnergy = function (creep) {
+      var targets = findEnergyDropoff(creep)
+
+      targets.sort((a, b) => a.store[RESOURCE_ENERGY] - b.store[RESOURCE_ENERGY]);
+      if (targets[0] != null) {
+        creep.say("save!")
+        if (creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE)
+          creep.moveTo(targets[0])
+      }
+      else {
+        creep.say("sleep!")
+        if (!Game.flags["BuilderSleep" + roomName]) Game.rooms[roomName].createFlag(25, 25, "BuilderSleep" + roomName);
+          creep.moveTo(Game.flags["BuilderSleep" + roomName])
+      }
     }
     var carry = function(creep,i){
      if(creep.store[RESOURCE_ENERGY]>0)
@@ -167,7 +171,7 @@ var runBuilder = {
      }
      var countB = memory.builder.buildersNum;
      var countC = memory.builder.carriersNum;
-    for(var i = 0;i<(countC>2?countC:2);i++){
+    for(var i = 0;i<(countC>4?countC:4);i++){
 
       if(Game.creeps[(memory.builder.carriers[0]+i)+"Day"] != undefined)
       {
@@ -185,7 +189,7 @@ var runBuilder = {
         addSpawn(roomName,creepBodys.carriers[level],(memory.builder.carriers[0]+i),creepBodys.carriers.priority)
     
     }
-    for(var i = 0;i<(countB>2?countB:2);i++){
+    for(var i = 0;i<(countB>4?countB:4);i++){
       if(Game.creeps[(memory.builder.builders[0]+i)+"Day"]!= undefined)
       {
        var creep = Game.creeps[(memory.builder.builders[0]+i)+"Day"]

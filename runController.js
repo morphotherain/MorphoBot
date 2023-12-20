@@ -62,7 +62,7 @@ var runController = {
       
      creepManage.controller.update(roomName)
 
-
+    SetRoadBetweenContainerAndSpawn(roomName,roomBuildings)
 
     var findEnergyDropoff = function (creep) {
     return creep.room.find(FIND_MY_CREEPS, {
@@ -343,3 +343,27 @@ function unboostCreep(creep) {
   return false;
 }
 
+function SetRoadBetweenContainerAndSpawn(roomName,roomBuildings)
+{
+  var memory = utils.getRoomMem(roomName);
+  if(memory.controller.hasSetRoad)return;
+  var containersID = roomBuildings.Containers[2]
+  var room = Game.rooms[roomName]
+  if(Game.time % 100 == 0)
+  {
+    var container0 = Game.getObjectById(containersID)
+    if(container0)
+    {
+      let structure = room.lookForAt(LOOK_STRUCTURES, container0.pos.x, container0.pos.y);
+      let constructionSite = room.lookForAt(LOOK_CONSTRUCTION_SITES, container0.pos.x, container0.pos.y);
+      let hasRoad = structure.some(s => s.structureType === STRUCTURE_ROAD);
+      let hasRoadSite = constructionSite.some(s => s.structureType === STRUCTURE_ROAD);
+
+      // 如果没有道路和道路工地，则考虑创建
+      if (!hasRoad && !hasRoadSite) {
+        utils.createRoadBetween(Game.getObjectById(roomBuildings.Spawns[0]).pos,container0.pos)
+        memory.controller.hasSetRoad = true;
+      }
+    }
+  }
+}

@@ -44,6 +44,9 @@ const DropEnergyManager = {
   
     // 执行拾取动作
     pickupEnergy: function(creep, MinNum = 0) {
+      
+      creep.say("pick!")
+
       this.initMemory(creep.room.name);
   
       let target = Game.getObjectById(Memory.energyTargets[creep.room.name][creep.name]) ||

@@ -138,13 +138,14 @@ var runSpawn =
     {
       memory.spawns.EcarriersNum = 0;
     }
-    console.log("memory.spawns.EcarriersNum",memory.spawns.EcarriersNum)
+
+    SetRoadBetweenContainerAndSpawn(roomName,roomBuildings)
      var getEnergy = function(creep)
      {
         if(utils.getEnergyFromRuins(creep)!=-1)
           return;
+        
         var containersID = [roomBuildings.Containers[0],roomBuildings.Containers[1]]
-
         var container = Game.getObjectById(containersID[i%2]);
         if(container)
         {
@@ -250,7 +251,10 @@ var runSpawn =
       memory.spawns.EcarriersNum = 1;
     if(level == 8)
       count = 0;
-    for(var i = 0;i<(2<count?count:2);i++){
+
+    var maxCarrier = (level<=2)?4:2;
+
+    for(var i = 0;i<(maxCarrier<count?count:maxCarrier);i++){
        if(Game.creeps[(memory.spawns.carriers[0]+i)+"Day"] != undefined)
        {
           creepBodys.carriers.priority = creepBodys.carriers.priority-2 
@@ -465,4 +469,44 @@ var runSpawn =
           }
       }
     }
+}
+
+function SetRoadBetweenContainerAndSpawn(roomName,roomBuildings)
+{
+  var memory = utils.getRoomMem(roomName);
+  if(memory.controller.hasSetRoad == 2)return;
+  if(!memory.controller.hasSetRoad) memory.controller.hasSetRoad = 0;
+  var containersID = [roomBuildings.Containers[0],roomBuildings.Containers[1]]
+  var room = Game.rooms[roomName]
+  if(Game.time % 100 == 0)
+  {
+    var container0 = Game.getObjectById(containersID[0])
+    var container1 = Game.getObjectById(containersID[1])
+    if(container0)
+    {
+      let structure = room.lookForAt(LOOK_STRUCTURES, container0.pos.x, container0.pos.y);
+      let constructionSite = room.lookForAt(LOOK_CONSTRUCTION_SITES, container0.pos.x, container0.pos.y);
+      let hasRoad = structure.some(s => s.structureType === STRUCTURE_ROAD);
+      let hasRoadSite = constructionSite.some(s => s.structureType === STRUCTURE_ROAD);
+
+      // 如果没有道路和道路工地，则考虑创建
+      if (!hasRoad && !hasRoadSite) {
+        utils.createRoadBetween(Game.getObjectById(roomBuildings.Spawns[0]).pos,container0.pos)
+        memory.controller.hasSetRoad = memory.controller.hasSetRoad+1
+      }
+    }
+    if(container1)
+    {
+      let structure = room.lookForAt(LOOK_STRUCTURES, container1.pos.x, container1.pos.y);
+      let constructionSite = room.lookForAt(LOOK_CONSTRUCTION_SITES, container1.pos.x, container1.pos.y);
+      let hasRoad = structure.some(s => s.structureType === STRUCTURE_ROAD);
+      let hasRoadSite = constructionSite.some(s => s.structureType === STRUCTURE_ROAD);
+
+      // 如果没有道路和道路工地，则考虑创建
+      if (!hasRoad && !hasRoadSite) {
+        utils.createRoadBetween(Game.getObjectById(roomBuildings.Spawns[0]).pos,container1.pos)
+        memory.controller.hasSetRoad = memory.controller.hasSetRoad+1
+      }
+    }
+  }
 }
