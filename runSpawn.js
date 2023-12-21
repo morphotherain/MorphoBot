@@ -45,7 +45,7 @@ var runSpawn =
 
     if(!Game.flags["carrierSleep"+roomName])Game.rooms[roomName].createFlag(25, 25, "carrierSleep"+roomName);
 
-    creepManage = creepManagers.Manage(roomName)
+    var creepManage = creepManagers.Manage(roomName)
     ManageStructure(roomName)
     var roomBuildings = Memory.rooms[roomName].buildings
 

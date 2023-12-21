@@ -12,7 +12,7 @@ var runReserver =
     {
         var level = Memory.level[roomName]
         if(level<3) return;
-        creepManage = creepManagers.Manage(roomName)
+        var creepManage = creepManagers.Manage(roomName)
         var creepBodys = {
             reservers:{
             3:{'claim':1,'move':4},
@@ -34,56 +34,36 @@ var runReserver =
                 reservers : ["r"+roomSourceName]
             }
         }
+        var sourcesID = Memory.sourceOut[roomSourceName].sourcesID
         var reserver = function(creep){
 
-            
             if(Game.rooms[roomSourceName] && Game.rooms[roomSourceName].controller) {
                 if(creep.room.name != roomSourceName)
                 {
-                    if(roomSourceName == "W54N21")
+                    var ExitPos
+                    if(Memory.sourceOut[roomSourceName].sources[sourcesID[0]])
+                        ExitPos = Memory.sourceOut[roomSourceName].sources[sourcesID[0]].roomExitOut[creep.room.name]
+                    if(!ExitPos)
                     {
-                        creep.moveTo(Game.rooms[roomSourceName].controller)
-                        return;
+                        const exitDir = creep.room.findExitTo(roomSourceName);
+                        const exit = creep.pos.findClosestByRange(exitDir);
+                        creep.moveTo(exit);
                     }
-                    utils.moveOverRoomsEX(creep.room.name,roomSourceName,creep)
+                    else
+                    {
+                        creep.moveTo(new RoomPosition(ExitPos.x,ExitPos.y,creep.room.name))
+                    }
                     return;
                 }
-                if(roomSourceName == "W54N21" ||roomSourceName == "W54N22" ||roomSourceName == "W55N22" ||roomSourceName == "E53S51" )
-                {
-                    if(creep.claimController(Game.rooms[roomSourceName].controller)==ERR_NOT_IN_RANGE)
-                    {
-                        creep.moveTo(Game.rooms[roomSourceName].controller, {reusePath: 50})
-
-                    }
-                    return;   
-                }
-
                 
                 {
                     var ans = creep.reserveController(Game.rooms[roomSourceName].controller)
                     if(ans==ERR_NOT_IN_RANGE)
                     {
                         creep.moveTo(Game.rooms[roomSourceName].controller, {
-                            costCallback: function(roomName, costMatrix) {
-
-                              for (var i =0;i < 50;i++ ) {
-
-                                costMatrix.set(0, i, 255);
-                                costMatrix.set(49, i, 255);
-                                
-                                costMatrix.set(i, 0, 255);
-                                costMatrix.set(i, 49, 255);
-
-                              }
-                          
-                          },
                           reusePath : 50
                           })
-                        console.log(creep.pos)
-                        if(creep.pos.x == 49){
-                            console.log(creep.pos,creep.move(LEFT))
-                            return;
-                        }
+                        
                     }   
                     if(ans == -7)
                     {
@@ -98,7 +78,20 @@ var runReserver =
             {
                 if(creep.room.name != roomSourceName)
                 {
-                    utils.moveOverRoomsEX(creep.room.name,roomSourceName,creep)
+                    var ExitPos
+                    if(Memory.sourceOut[roomSourceName].sources[sourcesID[0]])
+                        ExitPos = Memory.sourceOut[roomSourceName].sources[sourcesID[0]].roomExitOut[creep.room.name]
+                    if(!ExitPos)
+                    {
+                        const exitDir = creep.room.findExitTo(roomSourceName);
+                        const exit = creep.pos.findClosestByRange(exitDir);
+                        creep.moveTo(exit);
+                    }
+                    else
+                    {
+                        creep.moveTo(new RoomPosition(ExitPos.x,ExitPos.y,creep.room.name))
+                    }
+                    return;
                 }
                     
             }
@@ -110,7 +103,6 @@ var runReserver =
         {
             num = 1
         }
-
         for(var i = 0;i<num;i++){
             if(Game.creeps[(memory.reserver.reservers[0]+i)+"Day"] != undefined)
             {   
@@ -122,15 +114,14 @@ var runReserver =
                 var creep = Game.creeps[(memory.reserver.reservers[0]+i)+"Night"]
                 reserver(creep)
             }
-
-            if( (Game.rooms[roomSourceName] != undefined) &&(
-                (Game.rooms[roomSourceName].controller.reservation == undefined ||
-                 Game.rooms[roomSourceName].controller.reservation.ticksToEnd<1000)
-                )&&
-                ((!Game.rooms[roomSourceName])||!Game.rooms[roomSourceName].controller.my)
-                )
-                if( (Memory.outpostStatus[roomSourceName] == 0))
-                    addSpawn(roomName,creepBodys.reservers[level],(memory.reserver.reservers[0]+i),creepBodys.reservers.priority)
+            if( (Game.rooms[roomSourceName] != undefined) 
+                &&
+                ((Game.rooms[roomSourceName].controller.reservation == undefined ||
+                 Game.rooms[roomSourceName].controller.reservation.ticksToEnd<1000))
+                &&
+                ( (!Game.rooms[roomSourceName]) || !Game.rooms[roomSourceName].controller.my )
+            )
+                addSpawn(roomName,creepBodys.reservers[level],(memory.reserver.reservers[0]+i),creepBodys.reservers.priority)
 
         }
  }

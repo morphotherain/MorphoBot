@@ -202,11 +202,9 @@ var runOutSource = {
                         Memory.sourceOut[roomSourceName].sources[sourceID].roomExitOut[previousRoomName] = { x: prevPos.x, y: prevPos.y };
                   }
                   var x = prevPos.x 
-                  x = (x == 49)?0:x;
-                  x = (x == 0) ?49:x;
+                  x = (x == 49)?0:((x == 0) ?49:x);
                   var y = prevPos.y 
-                  y = (y == 49)?0:y;
-                  y = (y == 0) ?49:y; 
+                  y = (y == 49)?0:( (y == 0) ?49:y);
                   if (!Memory.sourceOut[roomSourceName].sources[sourceID].roomExitIn[step.roomName]) {
                         // 记录进入新房间的位置
                         Memory.sourceOut[roomSourceName].sources[sourceID].roomExitIn[step.roomName] = { x: x, y: y };

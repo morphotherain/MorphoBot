@@ -12,7 +12,7 @@ var runSource =
     {
 
         var roomBuildings = Memory.rooms[roomName].buildings
-        creepManage = creepManagers.Manage(roomName)
+        var creepManage = creepManagers.Manage(roomName)
         var creepBodys = {
             harvests:{
             0:{'work':2,'move':1},

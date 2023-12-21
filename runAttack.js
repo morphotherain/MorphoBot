@@ -9,7 +9,7 @@ const logger = require('mylog');
 var runAttack = {
     run : function(roomName,roomOutName){
     return;
-    creepManage = creepManagers.Manage(roomName)
+    var creepManage = creepManagers.Manage(roomName)
     var creepBodys = {
       attackers:{
         1:{'attack':2,'move':2},
