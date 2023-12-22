@@ -157,7 +157,7 @@ module.exports.loop  = function(){
 
 
     try {
-      roomRefuge.checkAndEvacuate(MemoryDataset.roomOutNames[roomName],roomName)
+      roomRefuge.checkAndEvacuate(roomOutNames,roomName)
     } catch (error) {
         console.log('Error in roomRefuge:', error);
     }
