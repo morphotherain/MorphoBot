@@ -9,7 +9,7 @@ var theRoomName = ''
 
 var runController = {
     run : function(roomName){
-    creepManage = creepManagers.Manage(roomName)
+    var creepManage = creepManagers.Manage(roomName)
     var roomBuildings = Memory.rooms[roomName].buildings
 
     theRoomName = roomName

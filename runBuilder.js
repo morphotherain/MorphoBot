@@ -15,7 +15,7 @@ var runBuilder = {
     
     if(!Game.flags["BuilderSleep"+roomName])Game.rooms[roomName].createFlag(26, 25, "BuilderSleep"+roomName);
 
-    creepManage = creepManagers.Manage(roomName)
+    var creepManage = creepManagers.Manage(roomName)
     var roomBuildings = Memory.rooms[roomName].buildings
 
     theRoomName = roomName
