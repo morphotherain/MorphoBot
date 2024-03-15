@@ -244,7 +244,6 @@ var runOutSource = {
          sourcesID = Memory.sourceOut[roomSourceName].sourcesID
          var i = 0
          for(let sourceID of sourcesID){
-            // 假设这是你的Memory结构
             if((Game.time / Memory.sourceOut[roomSourceName].checkTime)/2 == i)continue;
             i++
             if (!Memory.sourceOut[roomSourceName].sources[sourceID].currentCheckIndex) {

@@ -92,7 +92,8 @@ var creepManagers = {
                         if(creepManage.controller.upgradersNum>0)creepManage.controller.upgradersNum = creepManage.controller.upgradersNum + 2
                 }
             }
-            if(Game.rooms[roomName].storage && Game.rooms[roomName].storage.store["energy"]<50000)
+            if(Game.rooms[roomName].memory.AcceptUpgrade == undefined)Game.rooms[roomName].memory.AcceptUpgrade == true;
+            if(Game.rooms[roomName].storage && Game.rooms[roomName].storage.store["energy"]<50000 && !Game.rooms[roomName].memory.AcceptUpgrade)
             {
                 Game.rooms[roomName].memory.startUpgrade = false;
             }
