@@ -183,7 +183,8 @@ var runOutSource = {
                  }
          
                  return costs;
-               }
+               },
+               maxOps : 20000,
             })
             const path = pathResult.path 
             // 遍历路径点  
@@ -722,4 +723,6 @@ var runOutSource = {
 
 
 module.exports = runOutSource
+
+
 
