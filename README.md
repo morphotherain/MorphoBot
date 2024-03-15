@@ -18,57 +18,79 @@ bug反馈: qq2494754957(Morpho)
 在房间控制器每次升级后有一些建筑需要手动放置. 其中一些建筑有特殊的位置要求
 
 需要放置多种建筑的, 按照优先级放置更为稳定
-### level 1 无需放置
+### level 1 
+无需放置
 
-### level 2 放置优先级: 5个extension > 3个container
+### level 2 
+放置优先级: 
+
+5个extension > 3个container
 #### extension
 放置在能量矿近处 , 不挡路即可
 #### container
 第1个. 放置在 以控制器为中心 7x7的正方形外周上 (如图 C为控制器, O为可放置位置)
 
-O O O O O O O
+O  O  O  O  O  O  O
 
-O x x x x x O
+O  X  X  X  X  X  O
 
-O x x x x x O
+O  X  X  X  X  X  O
 
-O x x C x x O
+O  X  X  C  X  X  O
 
-O x x x x x O
+O  X  X  X  X  X  O
 
-O x x x x x O
+O  X  X  X  X  X  O
 
-O O O O O O O
+O  O  O  O  O  O  O
 
 第2-3个. 分别紧贴两个能量矿放置
 
-### level 3 放置优先级: 5个extension > 1个tower
+### level 3 
+放置优先级: 
 
-### level 4 放置优先级: 10个extension > 1个storage()
+5个extension > 1个tower
 
-### level 5 放置优先级: 10个extension > 1个Tower > 1个Link
+### level 4 
+放置优先级: 
 
-### level 6 放置优先级: 10个extension > 1个Terimeal(可选) > 1个Exator = 1个Container > 3个Lab
+10个extension > 1个storage()
+
+### level 5 
+放置优先级: 
+
+10个extension > 1个Tower > 1个Link
+
+### level 6 
+放置优先级: 
+
+10个extension > 1个Terimeal(可选) > 1个Exator = 1个Container > 3个Lab
 #### Exator & Container
 Exator放置在房间的元素矿上, Container紧贴Exator放置
 
 建造完成之后自动开始采集元素矿
 
-### level 7 放置优先级: 10个extension > 1个Spawn > 1个Factory(可选) > 3个Lab(可选) > 2Link(可选)
+### level 7 
+放置优先级: 
+
+10个extension > 1个Spawn > 1个Factory(可选) > 3个Lab(可选) > 2Link(可选)
 #### Link
 两个Link分别紧贴两个能量矿放置
 
-### level 8 放置优先级: 10个extension > 1个Spawn > 1个PowerSpawn = 1个Nuker = 1个Observer > 4个Lab
+### level 8 
+放置优先级: 
+
+10个extension > 1个Spawn > 1个PowerSpawn = 1个Nuker = 1个Observer > 4个Lab
 
 storage, Link, Terminal, 初始Spawn的放置位置
 
-这四个建筑之间经常转移资源, 因此他们的位置关系最好如下图中的菱形◇(-是空位或road)
+这四个建筑之间经常转移资源, 因此他们的位置关系最好如下图中的菱形◇(^是空位或road)
 
-- L -
+^  L  ^
 
-S - S
+S  ^  S
 
-- T -
+^  T  ^
 
 
 ## 移动旗帜
