@@ -2,7 +2,7 @@
 var utils = require('util')
 
 var addSpawn = require('addSpawn')
-var creepManagers = require('creepManagers')
+var creepManage = require('creepManage')
 var RoomInit = require('Init')
 var carryTask = require('carryTask')
 

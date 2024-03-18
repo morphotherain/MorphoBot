@@ -88,7 +88,7 @@ var creepManagers = {
                 if(Game.rooms[roomName].storage && Game.rooms[roomName].storage.store["energy"]>200000){
                     if(!Memory.rooms[roomName].controller.containerFull)Memory.rooms[roomName].controller.containerFull = 0;
                         Memory.rooms[roomName].controller.containerFull++;
-                    if(Memory.rooms[roomName].controller.containerFull > 200)
+                    if(Memory.rooms[roomName].controller.containerFull > 200 && Memory.level[roomName] != 8)
                         if(creepManage.controller.upgradersNum>0)creepManage.controller.upgradersNum = creepManage.controller.upgradersNum + 2
                 }
             }

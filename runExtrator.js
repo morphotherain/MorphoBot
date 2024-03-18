@@ -2,7 +2,7 @@
 var utils = require('util')
 
 var addSpawn = require('addSpawn')
-var creepManagers = require('creepManagers')
+var creepManage = require('creepManage')
 var RoomInit = require('Init')
 
 var structures = 
@@ -73,7 +73,7 @@ var minerManager = {
     run: function(room) {
         // 定义harvester和carrier的数量
         ManageStructure(room.name)
-        if(!structures.extrator || !structures.mineral || structures.mineral.mineralAmount==0 || (room.storage && room.storage.getFreeCapacity()< 200000 ))
+        if(!structures.extrator || !structures.mineral || structures.mineral.mineralAmount==0 || (room.storage && room.storage.store.getFreeCapacity()< 200000 ))
             return;
         var harvesterNight = Game.creeps['HM'+room.name+"Night"]
         var carrierNight = Game.creeps['CM'+room.name+"Night"];
