@@ -21,7 +21,7 @@ var runSource =
             3:{'work':5,'carry':0,'move':3},
             4:{'work':5,'carry':0,'move':3},
             5:{'work':5,'carry':0,'move':3},
-            6:{'work':5,'carry':0,'move':3},
+            6:{'work':5,'carry':1,'move':3},
             7:{'work':5,'carry':1,'move':3},
             8:{'work':15,'carry':2,'move':8},
             priority : creepManage.harvests.priority
@@ -53,7 +53,7 @@ var runSource =
                 creep.moveTo(Game.getObjectById(sourceID))
             if(Game.getObjectById(containersID[index]))
                 creep.moveTo(Game.getObjectById(containersID[index]))
-            if(level >= 7)
+            if(level >= 6)
             {
                 var link
                 if(creep.memory.LinkId && creep.pos.inRangeTo(Game.getObjectById(creep.memory.LinkId),1))

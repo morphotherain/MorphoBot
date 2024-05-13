@@ -525,6 +525,7 @@ var utils =
       return Memory.sources[sourceID].bodysCarrier;
 
     const spawn = Game.getObjectById(Memory.rooms[roomName].buildings.Spawns[0])
+    if(!spawn)return 3;
     const path = PathFinder.search(spawn.pos, { pos: source.pos, range: 1 });
     const distanceToSource = path.path.length * 2 + 1;
 

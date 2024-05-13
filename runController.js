@@ -15,16 +15,16 @@ var runController = {
     theRoomName = roomName
     var creepBodys = {
       carriers:{
-      0:{'carry':2,'move':2 },
-      1:{'carry':3,'move':3},
-      2:{'carry':6,'move':3},
-      3:{'carry':10,'move':5},
-      4:{'carry':16,'move':8},
-      5:{'carry':16,'move':8},
-      6:{'carry':16,'move':8},
-      7:{'carry':24,'move':12},
-      8:{'carry':2,'move':1},
-      priority : creepManage.carrierForUpgrade.priority
+        0:{'carry':2,'move':2 },
+        1:{'carry':3,'move':3},
+        2:{'carry':6,'move':3},
+        3:{'carry':10,'move':5},
+        4:{'carry':16,'move':8},
+        5:{'carry':16,'move':8},
+        6:{'carry':16,'move':8},
+        7:{'carry':24,'move':12},
+        8:{'carry':2,'move':1},
+        priority : creepManage.carrierForUpgrade.priority
       },
       upgraders:{
         0:{'work':1,'move':1,'carry':1},
@@ -32,35 +32,35 @@ var runController = {
         2:{'work':4,'move':1,'carry':2},
         3:{'work':6,'move':2,'carry':2},
         4:{'work':10,'move':2,'carry':4},
-        5:{'work':15,'move':4,'carry':1},
-        6:{'work':15,'move':8,'carry':1},
-        7:{'work':35,'move':10,'carry':1},
-        8:{'work':1,'move':1,'carry':1},
+        5:{'work':15,'move':3,'carry':3},
+        6:{'work':15,'move':8,'carry':4},
+        7:{'work':15,'move':10,'carry':4},
+        8:{'work':1,'move':1,'carry':4},
         priority : creepManage.upgraders.priority
       },
-     }
+    }
 
-     var level = Memory.level[roomName]
-     if(Game.rooms[roomName].controller.level == 8 )
-       level = 8;
+    var level = Memory.level[roomName]
+    if(Game.rooms[roomName].controller.level == 8 )
+      level = 8;
 
-     var memory = utils.getRoomMem(roomName);
-     if(memory.controller == undefined)
-     {
-        memory.controller = 
-        {
-          upgraders : ["u"],
-          upgradersNum : 3,
-          carriers : ["cu"],
-          carriersNum : 3
-        }
-     }
+    var memory = utils.getRoomMem(roomName);
+    if(memory.controller == undefined)
+    {
+      memory.controller = 
+      {
+        upgraders : ["u"],
+        upgradersNum : 3,
+        carriers : ["cu"],
+        carriersNum : 3
+      }
+    }
 
-      memory.controller.upgraders = ["u"+roomName]
-      memory.controller.carriers = ["cu"+roomName]
-     
-      
-     creepManage.controller.update(roomName)
+    memory.controller.upgraders = ["u"+roomName]
+    memory.controller.carriers = ["cu"+roomName]
+    
+    
+    creepManage.controller.update(roomName)
 
     SetRoadBetweenContainerAndSpawn(roomName,roomBuildings)
 
@@ -72,63 +72,64 @@ var runController = {
         }
     });
     }
-     var getEnergy = function(creep,i)
-     {
-        if(utils.getEnergyFromRuins(creep)!=-1)
-          return;
-        if(creep.room.storage!=undefined && creep.room.storage.store[RESOURCE_ENERGY]<=50000)
-          return; 
-        if(creep.room.storage!=undefined && creep.room.storage.store[RESOURCE_ENERGY]>50000) 
-        {
-           if(creep.withdraw(creep.room.storage,RESOURCE_ENERGY)==ERR_NOT_IN_RANGE)
+    
+    var ignoreCreep = true;
+    if(memory.constructureSitesNum > 0)ignoreCreep = false
+    var getEnergy = function(creep,i)
+    {
+      if(utils.getEnergyFromRuins(creep)!=-1)
+        return;
+      if(creep.room.storage!=undefined && creep.room.storage.store[RESOURCE_ENERGY]<=50000)
+        return; 
+      if(creep.room.storage!=undefined && creep.room.storage.store[RESOURCE_ENERGY]>50000) 
+      {
+          if(creep.withdraw(creep.room.storage,RESOURCE_ENERGY)==ERR_NOT_IN_RANGE)
             creep.moveTo(creep.room.storage)
-        }
-        else{
-          if(creep.room.energyAvailable != creep.room.energyCapacityAvailable  && energyManager.pickupEnergy(creep,creep.store.getFreeCapacity()) != -1  )
-            return;
-          if(creep.room.energyAvailable == creep.room.energyCapacityAvailable  && energyManager.pickupEnergy(creep, 0) != -1  )
-            return;
-          else
-          {
-            var containersID = [roomBuildings.Containers[0],roomBuildings.Containers[1]]
-            var container = Game.getObjectById(containersID[i%2]);
+      }
+      else{
+        if(creep.room.energyAvailable != creep.room.energyCapacityAvailable  && energyManager.pickupEnergy(creep,creep.store.getFreeCapacity()) != -1  )
+          return;
+        if(creep.room.energyAvailable == creep.room.energyCapacityAvailable  && energyManager.pickupEnergy(creep, 0) != -1  )
+          return;
+        else
+        {
+          var containersID = [roomBuildings.Containers[0],roomBuildings.Containers[1]]
+          var container = Game.getObjectById(containersID[i%2]);
 
-            if(container)
-            {
-              if(creep.room.energyAvailable != creep.room.energyCapacityAvailable && container.store["energy"]<500)
-                return;
-              if(creep.withdraw(container,RESOURCE_ENERGY)==ERR_NOT_IN_RANGE)
-                creep.moveTo(container,{visualizePathStyle:{},reusePath:50});
-              if(creep.pos.inRangeTo(container,1))
-                ;//creep.moveTo(creep.room.storage,{visualizePathStyle:{}})
+          if(container)
+          {
+            if(creep.room.energyAvailable != creep.room.energyCapacityAvailable && container.store["energy"]<500)
               return;
-            }
+            if(creep.withdraw(container,RESOURCE_ENERGY)==ERR_NOT_IN_RANGE)
+              creep.moveTo(container,{visualizePathStyle:{},reusePath:50,ignoreCreeps: ignoreCreep});
+            if(creep.pos.inRangeTo(container,1))
+              ;//creep.moveTo(creep.room.storage,{visualizePathStyle:{}})
+            return;
           }
         }
+      }
 
-     }
-     var saveEnergy = function(creep)
-     {
+    }
+    var saveEnergy = function(creep)
+    {
 
       var container = Game.getObjectById(roomBuildings.Containers[2]);
-      var targets = findEnergyDropoff(creep)
       if(container != null)
       {
         if(creep.transfer(container,RESOURCE_ENERGY)==ERR_NOT_IN_RANGE){
-            //utils.railwayMove(creep,container,1)
-            creep.moveTo(container)
+            creep.moveTo(container,{ignoreCreeps: ignoreCreep})
         }
       }
       else{
+        var targets = findEnergyDropoff(creep)
         if(targets[0] != null)
         {
-          
           targets.sort((a,b) => a.store[RESOURCE_ENERGY]  - b.store[RESOURCE_ENERGY] );
           if(creep.transfer(targets[0],RESOURCE_ENERGY)==ERR_NOT_IN_RANGE)
             creep.moveTo(targets[0])
         }
       }
-     }
+    }
 
 
     var carry = function(creep,i){
@@ -141,12 +142,12 @@ var runController = {
 
     var upgrade = function(creep){
 
-      if(creep.room.name == "W55N21"){
-        if(boostCreep(creep,roomBuildings.Labs))
-          return;
+      //if(creep.room.name == "W55N21"){
+      //  if(boostCreep(creep,roomBuildings.Labs))
+      //    return;
         //if(!unboostCreep(creep))
         //  return;
-      }
+      //}
 
       var container = Game.getObjectById( roomBuildings.Containers[2] )
       var link = Game.getObjectById( roomBuildings.Links[3] )
@@ -157,13 +158,19 @@ var runController = {
           container = link;
       }
 
-      if(creep.store[RESOURCE_ENERGY] <= 40)
+      if(creep.store[RESOURCE_ENERGY] <= 20)
       {
         if(container != undefined){
-          if(creep.withdraw(container,RESOURCE_ENERGY)==ERR_NOT_IN_RANGE)
-            creep.moveTo(container)
-          else
-            creep.moveTo(container)
+          if(container.store[RESOURCE_ENERGY]<20){
+            if(!creep.pos.inRangeTo(creep.room.controller, 2))
+              creep.moveTo(creep.room.controller)
+          }
+          else{
+            if(creep.withdraw(container,RESOURCE_ENERGY)==ERR_NOT_IN_RANGE)
+              creep.moveTo(container)
+            else
+              creep.moveTo(container)
+          }
         }
         else
         {
@@ -176,20 +183,20 @@ var runController = {
       if(!Game.flags["upgrade"+theRoomName])Game.rooms[theRoomName].createFlag(creep.room.controller.pos.x, creep.room.controller.pos.y, "upgrade"+theRoomName);
       if(creep.pos.getRangeTo(Game.flags["upgrade"+theRoomName],0) == 1)
         creep.moveTo(Game.flags["upgrade"+theRoomName])
-     }
+    }
 
-     var countC = memory.controller.carriersNum
-     for(var i = 0;i<countC;i++){
-       if(Game.creeps[(memory.controller.carriers[0]+i)+"Day"] != undefined)
-       {
+    var countC = memory.controller.carriersNum
+    for(var i = 0;i<(countC>4?countC:4);i++){
+      if(Game.creeps[(memory.controller.carriers[0]+i)+"Day"] != undefined)
+      {
         var creep = Game.creeps[(memory.controller.carriers[0]+i)+"Day"]
         carry(creep,i)
-       }
-       if(Game.creeps[(memory.controller.carriers[0]+i)+"Night"] != undefined)
-       {
+      }
+      if(Game.creeps[(memory.controller.carriers[0]+i)+"Night"] != undefined)
+      {
         var creep = Game.creeps[(memory.controller.carriers[0]+i)+"Night"]
         carry(creep,i)
-       }
+      }
 
 
       if(true && i<memory.controller.carriersNum){

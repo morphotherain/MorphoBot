@@ -82,10 +82,10 @@ const roleCarrierStorage = {
 
 const runLinks = {
 
-    run: function(room) {
+    run: function(roomName) {
         // 假设我们已经在Room的memory中存储了links的id
-
-        ManageStructure(room.name)
+        var room = Game.rooms[roomName];
+        ManageStructure(roomName)
 
         if(structures.centerLink == undefined || structures.centerLink.length==0)
             return;

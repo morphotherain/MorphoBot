@@ -21,14 +21,14 @@ var runTower =
         var closestDamagedStructure = controller.pos.findClosestByRange(FIND_STRUCTURES, {filter: function(object) {
             return ((object.hits < object.hitsMax &&(object.hitsMax- object.hits)>20000  &&
                 !(object.structureType == STRUCTURE_WALL || object.structureType == STRUCTURE_RAMPART))||
-                 (((object.structureType == STRUCTURE_WALL || object.structureType == STRUCTURE_RAMPART) && object.hits<5000)) );
+                 (((object.structureType == STRUCTURE_WALL || object.structureType == STRUCTURE_RAMPART) && object.hits<2000)) );
            }
         });
         if(!closestDamagedStructure){
             closestDamagedStructure = controller.pos.findClosestByRange(FIND_STRUCTURES, {filter: function(object) {
-                return ((object.hits < object.hitsMax  &&  
+                return (((object.hitsMax- object.hits)>2000  &&  
                     !(object.structureType == STRUCTURE_WALL || object.structureType == STRUCTURE_RAMPART))||
-                    (((object.structureType == STRUCTURE_WALL || object.structureType == STRUCTURE_RAMPART) && object.hits<5000 && !object.isPublic)) );
+                    (((object.structureType == STRUCTURE_WALL || object.structureType == STRUCTURE_RAMPART) && object.hits<2000 && !object.isPublic)) );
             }
             });
         }

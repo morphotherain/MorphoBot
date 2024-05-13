@@ -70,9 +70,10 @@ var roleCarrier = {
 
 
 var minerManager = {
-    run: function(room) {
+    run: function(roomName) {
+        var room = Game.rooms[roomName]
         // 定义harvester和carrier的数量
-        ManageStructure(room.name)
+        ManageStructure(roomName)
         if(!structures.extrator || !structures.mineral || structures.mineral.mineralAmount==0 || (room.storage && room.storage.store.getFreeCapacity()< 200000 ))
             return;
         var harvesterNight = Game.creeps['HM'+room.name+"Night"]

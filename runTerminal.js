@@ -4,7 +4,9 @@ const logger = require('mylog');
 
 var terminalManager =
 {
-    manage: function (terminal) {
+    manage: function (roomName) {
+        var terminal = Game.rooms[roomName].terminal
+        if(!terminal || Game.time%100 != 0)return;
         // 用户定义的规则
         const ORDER_RULES = {
             'O': {

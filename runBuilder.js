@@ -9,10 +9,12 @@ const energyManager = require('assignDropEnergy');
 
 var theRoomName = ''
 
+var maxRamHits = [0,0,0,0,100000,100000,100000,100000,1000000000]
+
+
 var runBuilder = {
     run : function(roomName){
 
-    
     if(!Game.flags["BuilderSleep"+roomName])Game.rooms[roomName].createFlag(26, 25, "BuilderSleep"+roomName);
 
     var creepManage = creepManagers.Manage(roomName)
@@ -21,15 +23,15 @@ var runBuilder = {
     theRoomName = roomName
     var creepBodys = {
       carriers:{
-      1:{'carry':3,'move':3},
-      2:{'carry':6,'move':3},
-      3:{'carry':10,'move':5},
-      4:{'carry':10,'move':5},
-      5:{'carry':10,'move':5},
-      6:{'carry':16,'move':8},
-      7:{'carry':16,'move':8},
-      8:{'carry':24,'move':12},
-      priority : creepManage.carrierForBuilder.priority
+        1:{'carry':3,'move':3},
+        2:{'carry':6,'move':3},
+        3:{'carry':10,'move':5},
+        4:{'carry':10,'move':5},
+        5:{'carry':10,'move':5},
+        6:{'carry':16,'move':8},
+        7:{'carry':16,'move':8},
+        8:{'carry':24,'move':12},
+        priority : creepManage.carrierForBuilder.priority
       },
       builders:{
         1:{'work':1,'move':2,'carry':1},
@@ -43,29 +45,26 @@ var runBuilder = {
         priority : creepManage.builder.priority
       },
       
-     }
+    }
 
-     var memory = utils.getRoomMem(roomName);
-     if(memory.builder == undefined)
-     {
-        memory.builder = 
-        {
-          builders : ["b"],
-          buildersNum : 1,
-          carriers : ["cb"],
-          carriersNum : 2
-        }
-     }
+    var memory = utils.getRoomMem(roomName);
+    if(memory.builder == undefined)
+    {
+      memory.builder = 
+      {
+        builders : ["b"],
+        buildersNum : 1,
+        carriers : ["cb"],
+        carriersNum : 2
+      }
+    }
     memory.builder.builders = ["b"+roomName]
     memory.builder.carriers = ["cb"+roomName]
     
-
-     var level = Memory.level[roomName]
-     if(level == 0)return;
+    var level = Memory.level[roomName]
+    if(level == 0)return;
 
     creepManage.builder.update(roomName);
-
-
 
     var findEnergyDropoff = function (creep) {
       return creep.room.find(FIND_MY_CREEPS, {
@@ -95,7 +94,7 @@ var runBuilder = {
         //  Memory.energyTargets[creep.room.name][creep.name] = ""
         //if(creep.room.energyAvailable == creep.room.energyCapacityAvailable  && energyManager.pickupEnergy(creep) != -1  )
         // return;
-        console.log(creep.room.energyAvailable,creep.room.energyCapacityAvailable,creep.room.energyAvailable != creep.room.energyCapacityAvailable)
+        //console.log(creep.room.energyAvailable,creep.room.energyCapacityAvailable,creep.room.energyAvailable != creep.room.energyCapacityAvailable)
         if(creep.room.energyAvailable != creep.room.energyCapacityAvailable  && energyManager.pickupEnergy(creep,creep.store.getFreeCapacity()) != -1  )
           return;
         if(creep.room.energyAvailable == creep.room.energyCapacityAvailable  && energyManager.pickupEnergy(creep, 0) != -1  )
@@ -136,42 +135,41 @@ var runBuilder = {
       }
     }
     var carry = function(creep,i){
-     if(creep.store[RESOURCE_ENERGY]>0)
-       saveEnergy(creep)
-     else
-       getEnergy(creep,i)
+      if(creep.store[RESOURCE_ENERGY]>0)
+        saveEnergy(creep)
+      else
+        getEnergy(creep,i)
     
     }
-     var build = function(creep,roomName){
+
+    var buildTarget = 0;
+    var build = function(creep,roomName){
       if(creep == undefined) {return;}
-      if(creep.room.name == "W13N8"){
-        if(boostCreep(creep,"655470f7989500704d49c2f8"))
-          return;
+
+      if(buildTarget == 0){
+        buildTarget = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES,{filter:(s)=>s.structureType != "road"});
+        if(!buildTarget) buildTarget = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES)
       }
-      var target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES,{filter:(s)=>s.structureType != "road"});
-      if(!target) target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES)
-      if(target) {
-          if(creep.build(target) == ERR_NOT_IN_RANGE) {
-              creep.moveTo(target);
+      if(buildTarget) {
+          if(creep.build(buildTarget) == ERR_NOT_IN_RANGE) {
+              creep.moveTo(buildTarget);
           }
           else
           {
-            creep.moveTo(target);
-            //creep.moveTo(Game.flags[flag_build_name[theRoomName]])  
+            creep.moveTo(buildTarget);
           }
-       } 
+        } 
       else{
         
-        if(repairWallsAndRamparts(creep,roomName)==-1){
+        if(repairWallsAndRamparts(creep,roomName, maxRamHits[level])==-1){
           
           if(!Game.flags["BuilderSleep"+roomName])Game.rooms[roomName].createFlag(25, 25, "BuilderSleep"+roomName);
           creep.moveTo(Game.flags["BuilderSleep"+roomName])  
         }
       }
-      //creep.moveTo(Game.flags['Flag1'])
-     }
-     var countB = memory.builder.buildersNum;
-     var countC = memory.builder.carriersNum;
+    }
+    var countB = memory.builder.buildersNum;
+    var countC = memory.builder.carriersNum;
     for(var i = 0;i<(countC>4?countC:4);i++){
 
       if(Game.creeps[(memory.builder.carriers[0]+i)+"Day"] != undefined)
@@ -184,8 +182,6 @@ var runBuilder = {
         var creep = Game.creeps[(memory.builder.carriers[0]+i)+"Night"]
         carry(creep,i)
       }
-
-
       if(true && i<countC)
         addSpawn(roomName,creepBodys.carriers[level],(memory.builder.carriers[0]+i),creepBodys.carriers.priority)
     
@@ -204,41 +200,32 @@ var runBuilder = {
 
       if(true && i<countB)
         addSpawn(roomName,creepBodys.builders[level],(memory.builder.builders[0]+i),creepBodys.builders.priority)
-    
-   }
+    }
     
   }
 }
   
 module.exports = runBuilder;
 
-
-function repairWallsAndRamparts(creep,roomName) {
+function repairWallsAndRamparts(creep, roomName,maxRamHits) {
   // 初始化或更新修理计数
-  if (!creep.memory.repairAmount) {
-      creep.memory.repairAmount = 0;
-  }
-
-  let target = Game.getObjectById(creep.memory.targetId);
-
-  // 检查当前目标是否有效，以及是否已经修理超过20k生命值
-  if (!target || target.hits === target.hitsMax || creep.memory.repairAmount >= 10000) {
+  if (!Memory.rooms[roomName].repairTarget || !Game.getObjectById(Memory.rooms[roomName].repairTarget) || Memory.rooms[roomName].repairAmount>100000) {
       // 查找血量最低的墙壁或城垛
-      if(!Game.flags["build"+roomName])Game.rooms[roomName].createFlag(25, 25, "build"+roomName);
-      target = Game.flags["build"+roomName].pos.findInRange(FIND_STRUCTURES,15, {
-          filter: (s) => (s.structureType === STRUCTURE_RAMPART) && s.hits < s.hitsMax && !s.isPublic
+      let target = creep.room.find(FIND_STRUCTURES, {
+          filter: (s) => (s.structureType === STRUCTURE_RAMPART ||s.structureType === STRUCTURE_WALL) && (s.hits<maxRamHits) && !s.isPublic
       }).reduce((lowest, structure) => {
           return (lowest && lowest.hits < structure.hits) ? lowest : structure;
       }, null);
 
-      // 重置修理计数并设置新目标
+      // 设置新目标
       if (target) {
-          creep.memory.targetId = target.id;
-          creep.memory.repairAmount = 0;
-      }
-      else 
-        return -1;
+          Memory.rooms[roomName].repairTarget = target.id;
+          Memory.rooms[roomName].repairAmount = 0;
+      } else
+          return -1;
   }
+
+  let target = Game.getObjectById(Memory.rooms[roomName].repairTarget);
 
   // 执行修理操作
   if (target) {
@@ -246,9 +233,9 @@ function repairWallsAndRamparts(creep,roomName) {
           creep.moveTo(target);
       } else {
           // 更新累计修理值
-          if(!creep.pos.isNearTo(target))
-          creep.moveTo(target);
-          creep.memory.repairAmount += creep.getActiveBodyparts(WORK) * REPAIR_POWER;
+          if (!creep.pos.isNearTo(target))
+              creep.moveTo(target);
+          Memory.rooms[roomName].repairAmount += creep.getActiveBodyparts(WORK) * REPAIR_POWER;
       }
   }
 }

@@ -5,7 +5,8 @@ var addSpawn = require('addSpawn')
 
 var military = {
     /** @param {Room} room **/
-    run: function(room) {
+    run: function(roomName) {
+      var room = Game.rooms[roomName];
       // 每个Creep的角色名
       const roleName = 'soldier';
       const roleName2 = 'soldier2';

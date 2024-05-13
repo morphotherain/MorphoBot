@@ -22,7 +22,7 @@ const DropEnergyManager = {
         filter: resource => resource.resourceType === RESOURCE_ENERGY
       });
   
-      console.log(creep.name, MinNum)
+      console.log("assugbDropEnergys.js[LOG]:"+creep.name, MinNum)
       // 过滤已分配的目标
       const unassignedTargets = targets.filter(
         target => !Object.values(Memory.energyTargets[creep.room.name]).includes(target.id) && 
