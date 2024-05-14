@@ -296,7 +296,7 @@ var sing = {
         const currentLyricJP = lyricsArrayJP[creep.memory.currentLyricIndex];
 
         // 说出当前歌词
-        creep.say(currentLyricJP);
+        creep.say(currentLyricJP, true);
 
         // 在creep的当前位置绘制歌词（创建泡泡效果）
         creep.room.visual.text(currentLyricCN, creep.pos.x, creep.pos.y, {

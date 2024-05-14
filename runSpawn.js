@@ -2,33 +2,10 @@ var utils = require('util')
 var addSpawn = require('addSpawn')
 var dataset = require('data')
 var creepManagers = require('creepManagers')
+var buildingMgr = require('buildingMgr');
 var energyManager = require('assignDropEnergy');
 var sing = require('lyrics');
-var carryTask = require('carryTask')
-
-var structures = 
-{
-    Labs : [],
-    Nuker : "",
-    PowerSpawn : "",
-    upgradeLink : "",
-    Factory : "",
-}
-var ManageStructure = function(roomName)
-{
-  var roomBuildings = Memory.rooms[roomName].buildings
-  var Labs = roomBuildings.Labs;
-  var Nuker = roomBuildings.Nuker;
-  var PowerSpawn = roomBuildings.PowerSpawn;
-  var Factory = roomBuildings.Factory;
-
-  structures.Labs = Labs.map(id => Game.getObjectById(id));
-  structures.Nuker = Game.getObjectById(Nuker);
-  structures.PowerSpawn = Game.getObjectById(PowerSpawn);
-  structures.Factory = Game.getObjectById(Factory);
-}
-
-
+var carryTask = require('carryTask');
 
 
 var runSpawn = 
@@ -38,7 +15,7 @@ var runSpawn =
     if(!Game.flags["carrierSleep"+roomName])Game.rooms[roomName].createFlag(25, 25, "carrierSleep"+roomName);
 
     var creepManage = creepManagers.Manage(roomName)
-    ManageStructure(roomName)
+    var structures = buildingMgr.ManageStructure(roomName)
     var roomBuildings = Memory.rooms[roomName].buildings
 
     var creepBodys = {
@@ -242,8 +219,10 @@ var runSpawn =
     var creep2 = Game.creeps[(memory.spawns.AdvaceCarriers[0])+roomName+"Night"]
     if(!creep1 && !creep2 && memory.spawns.AdvaceCarriersAccept)
       memory.spawns.EcarriersNum = 1;
-    if(level == 8)
+
+    if(level == 8 || (structures.centerLink && structures.sourceLinks[0] && structures.sourceLinks[1])){
       count = 0;
+    }
 
     var maxCarrier = (level<=2)?4:2;
 
@@ -285,7 +264,7 @@ var runSpawn =
          addSpawn(roomName,creepBodys.Ecarriers[(energyAvailable>750)?2:1],(memory.spawns.Ecarriers[0]+i),creepBodys.Ecarriers.priority)
       
     }
-    if(memory.spawns.AdvaceCarriersAccept  || roomName == "W55N21")
+    if(memory.spawns.AdvaceCarriersAccept)
     {
       var creep1 = Game.creeps[(memory.spawns.AdvaceCarriers[0])+roomName+"Day"]
       var creep2 = Game.creeps[(memory.spawns.AdvaceCarriers[0])+roomName+"Night"]
@@ -305,14 +284,12 @@ var runSpawn =
       if(creep1)
       {
         sing.runSing(creep1);
-        carryTask.Tasks = TaskList
-        carryTask.runCarry(creep1,true)
+        carryTask.runCarry(creep1,true);
       }
       if(creep2)
       {
         sing.runSing(creep2);
-        carryTask.Tasks = TaskList
-        carryTask.runCarry(creep2,true)
+        carryTask.runCarry(creep2,true);
       }
 
     }

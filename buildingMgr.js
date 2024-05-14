@@ -65,7 +65,45 @@ var buildingMgr = {
         Memory.rooms[room.name].buildings["Spawns"] = Spawns.map(b => b.id);
 
         let Labs = room.find(FIND_MY_STRUCTURES, { filter: (s) => s.structureType === "lab" });
-        Memory.rooms[room.name].buildings["Labs"] = Labs.map(b => b.id);
+        var LabsID = Labs.map(b => b.id);
+
+        // 获取Lab周围Lab数量的函数
+        function getSurroundingLabCount(room, labId, surroundingLabs) {
+            const nearbyLabs = surroundingLabs[labId] || [];
+            return nearbyLabs.length;
+        }
+
+
+        // 对Lab ID数组进行按Lab周围Lab数量排序的函数
+        function sortLabsBySurroundingCount(room, labIds) {
+            if (!room) return []; // 如果房间不存在，则返回空数组
+
+            // 获取Lab周围Lab的缓存对象
+            const surroundingLabs = {};
+
+            // 遍历Lab ID数组，执行一次findInRange，将结果存储到缓存对象中
+            labIds.forEach(labId => {
+                const lab = Game.getObjectById(labId);
+                if (lab) {
+                    surroundingLabs[labId] = lab.pos.findInRange(FIND_STRUCTURES, 1, {
+                        filter: (s) => s.structureType === STRUCTURE_LAB &&
+                                        s.id !== labId
+                    });
+                }
+            });
+
+            return labIds.sort((a, b) => {
+                const labA = Game.getObjectById(a);
+                const labB = Game.getObjectById(b);
+                if (!labA || !labB) return 0; // 如果Lab不存在，则返回0
+
+                const countA = getSurroundingLabCount(room, a, surroundingLabs);
+                const countB = getSurroundingLabCount(room, b, surroundingLabs);
+                return countB - countA; // 从高到低排序
+            });
+        }
+        const sortedLabIds = sortLabsBySurroundingCount(room, LabsID); // 按周围Lab数量排序后的Lab ID数组
+        Memory.rooms[room.name].buildings["Labs"] = sortedLabIds;
 
         let PowerSpawn = room.find(FIND_MY_STRUCTURES, { filter: (s) => s.structureType === "powerSpawn" });
         if(PowerSpawn.length > 0)
@@ -78,6 +116,7 @@ var buildingMgr = {
             if(buildings.length > 0)
                 Memory.rooms[room.name].buildings[type] = buildings[0].id;
         });
+
 
 
         //  Containers  //
@@ -177,7 +216,45 @@ var buildingMgr = {
 
 
 
+    },
+
+    ManageStructure : function(roomName)
+    {
+        var structures = 
+        {
+            Labs : [],
+            Nuker : "",
+            PowerSpawn : "",
+            upgradeLink : "",
+            Factory : "",
+        }
+        var roomBuildings = Memory.rooms[roomName].buildings
+        var Labs = roomBuildings.Labs;
+        var Nuker = roomBuildings.Nuker;
+        var PowerSpawn = roomBuildings.PowerSpawn;
+        var Factory = roomBuildings.Factory;
+
+        var LinkId = roomBuildings.Links
+        var centerLinkID = LinkId[0]
+        var exitLinkIDs =  [LinkId[4],LinkId[5]]
+        var sourceLinkIDs =  [LinkId[1],LinkId[2]]
+        var upgradeLinkID =  LinkId[3]
+
+        structures.Labs = Labs.map(id => Game.getObjectById(id));
+        structures.Nuker = Game.getObjectById(Nuker);
+        structures.PowerSpawn = Game.getObjectById(PowerSpawn);
+        structures.Factory = Game.getObjectById(Factory);
+
+        structures.centerLink = Game.getObjectById(centerLinkID);
+        structures.exitLinks = exitLinkIDs.map(id => Game.getObjectById(id));
+        structures.sourceLinks = sourceLinkIDs.map(id => Game.getObjectById(id));
+        structures.upgradeLink = Game.getObjectById(upgradeLinkID);
+
+        return structures;
     }
+
+
+
 };
 
 module.exports = buildingMgr;

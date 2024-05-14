@@ -1,274 +1,217 @@
-var carryTask = 
+const { min } = require("lodash");
+
+var carryTask =
 {
-    Tasks : [{type:"", source : "", target :"", targetAmount :0,priority:0}],
-    runCarry : function(creep,spawn = false){
+    Tasks: [{ type: "", source: "", target: "", targetAmount: 0, priority: 0 }],
+    runCarry: function (creep, spawn = false, taskName = "carryTask") {
         var next = true;
         var spawnState = -1
-        if(spawn)
+        if (spawn)
             spawnState = EsaveEnergy(creep)
-        if(spawnState != -1)
+        if (spawnState != -1)
             return;
         next = false;
-        task = this.getHighestPriorityTask(creep)
-        creep.memory.task = task
-        
+
+        try{task = this.getHighestPriorityTask(creep, taskName)}catch(error){console.log("rungetHighestPriorityTaskCarry"+error)}
 
 
-        if(!task || task == null ){
-            if(creep.store.getUsedCapacity()!=0)
-            {
+        if (!task || task == null) {
+            if (creep.store.getUsedCapacity() != 0) {
                 var target = creep.room.storage;
-                if(target) {
-                    for(const resourceType in creep.store) {
-                        if(creep.transfer(target, resourceType) === ERR_NOT_IN_RANGE) {
-                            creep.moveTo(target, {visualizePathStyle: {stroke: '#ffffff'}});
-                        }
-                    }
-                }
-            }
-            return;
-
-        }
-
-        var tranSource = null
-        var tranTarget = null
-        var tranAmount = null
-    
-        if (task.targetAmount < task.target.store[task.type])
-        {
-            tranSource = task.target
-            tranTarget = task.source
-            tranAmount = task.target.store[task.type] - task.targetAmount
-            creep.memory.send = false
-            
-        }
-        if (task.targetAmount > task.target.store[task.type])
-        {
-            tranSource = task.source
-            tranTarget = task.target    
-            tranAmount = task.targetAmount - task.target.store[task.type]
-            creep.memory.send = true
-            
-        }
-        if (task.targetAmount == task.target.store[task.type] ){
-            if(creep.store[task.type]!=0)
-            {
-                if(creep.memory.send)
-                {
-                    tranSource = task.source 
-                    tranTarget = task.target
-                    tranAmount = creep.store[task.type]
-                    creep.memory.send = true
-                }
-                else
-                {
-                    tranSource = task.target
-                    tranTarget = task.source    
-                    tranAmount = creep.store[task.type]
-                    creep.memory.send = false
-                }
-            }
-
-        }
-        
-        if(tranSource == null || tranTarget == null)
-        {
-            if(creep.store.getUsedCapacity()!=0)
-            {
-                var target = creep.room.storage;
-                if(target) {
-                    for(const resourceType in creep.store) {
-                        if(creep.transfer(target, resourceType) === ERR_NOT_IN_RANGE) {
-                            creep.moveTo(target, {visualizePathStyle: {stroke: '#ffffff'}});
+                if (target) {
+                    for (const resourceType in creep.store) {
+                        if (creep.transfer(target, resourceType) === ERR_NOT_IN_RANGE) {
+                            creep.moveTo(target, { visualizePathStyle: { stroke: '#ffffff' } });
                         }
                     }
                 }
             }
             return;
         }
-        
-        {
-            if(creep.store.getUsedCapacity() > creep.store[task.type])
-            {
-                var target = creep.room.storage;
-                if(target) {
-                    for(const resourceType in creep.store) {
-                        if(resourceType == task.type)
-                            continue
-                        if(creep.transfer(target, resourceType) === ERR_NOT_IN_RANGE) {
-                            creep.moveTo(target, {visualizePathStyle: {stroke: '#ffffff'}});
-                        }
-                    }
-                }
+        task.priority = 0;
+
+        var tranSource = Game.getObjectById(task.source)
+        var tranTarget = Game.getObjectById(task.target)
+        var tranType = Object.keys(task.resourceType)[0];
+        var tranAmount = Math.min(tranSource.store[tranType], task.resourceType[tranType]);
+        var tranAmount = Math.min(creep.store.getFreeCapacity(), tranAmount);
+
+        // 存储 creep 内存中的资源到 storage 中
+        for (let resourceType in creep.store) {
+            if (resourceType !== tranType) {
+                creep.moveTo(creep.room.storage)
+                creep.transfer(creep.room.storage, resourceType);
                 return;
             }
-            if(!creep.memory.storeFull)
-                creep.memory.storeFull = false;
-            if(creep.store.getFreeCapacity()==creep.store.getCapacity())
-                creep.memory.storeFull = false;
-            if(creep.store.getUsedCapacity()==creep.store.getCapacity())
-                creep.memory.storeFull = true;
-            if(!creep.memory.storeFull)
-            {
-                var amount = Math.min(tranAmount, creep.store.getFreeCapacity(), tranTarget.store.getFreeCapacity(),tranSource.store[task.type] )
-                var ans = creep.withdraw(tranSource,task.type, amount)
-                if(ans == ERR_NOT_IN_RANGE){
-                    creep.moveTo(tranSource)
-                    next = false
-                }
-                if(ans == OK){
-                    next = true;
-                    creep.memory.storeFull = true;
-                }
+        }
 
-            }
-            else
-            {
-                var ans = creep.transfer(tranTarget,task.type)
-                if(ans == ERR_NOT_IN_RANGE){
-                    creep.moveTo(tranTarget)
-                    next = false
-                }
-                if(ans == OK){
-                    next = true;
-                    creep.memory.storeFull = false;
-                }
-            }
+        console.log("carryTask[LOG]:", creep.name, "  ", tranSource, " ", tranTarget, " ", tranType);
+
+        var moveTarget = 0
+
+        if (creep.store[tranType] == 0 && creep.ticksToLive > 30) creep.memory.full = false;
+        else creep.memory.full = true;
+        if (creep.memory.full) {
+            if (creep.transfer(tranTarget, tranType) == ERR_NOT_IN_RANGE)
+                moveTarget = tranTarget
+        }
+        else {
+            var ans = creep.withdraw(tranSource, tranType, tranAmount)
+            if (creep.withdraw(tranSource, tranType, tranAmount) == ERR_NOT_IN_RANGE)
+                moveTarget = tranSource
+            //console.log("carryTask[LOG]:",creep.name, "  ", tranSource, " ", tranAmount);
+
 
         }
-        
+        creep.moveTo(moveTarget)
+
+        return;
+
+
+
 
     },
-    getHighestPriorityTask: function(creep) {
-        if (this.Tasks.length === 0) {
+    getHighestPriorityTask: function (creep, taskName = "carryTask") {
+        var Tasks = creep.room.memory[taskName];
+        if (!Tasks) Tasks = {};
+        if (Object.keys(Tasks).length === 0) {
             return null; // 没有任务
         }
-        var highestPriorityTask = this.Tasks[0]; // 初始假设第一个任务优先级最高
-        if(highestPriorityTask.targetAmount == highestPriorityTask.target.store[highestPriorityTask.type]
-            ||(highestPriorityTask.targetAmount > highestPriorityTask.target.store[highestPriorityTask.type] && (highestPriorityTask.source.store[highestPriorityTask.type] == 0 && creep.store[highestPriorityTask.type]==0))
-          )
+
+        Memory.OverRoomsTransfer = Memory.OverRoomsTransfer || {};
+
+        var TaskKeys = Object.keys(Tasks)
+        var highestPriorityTask = Tasks[TaskKeys[0]]; // 初始假设第一个任务优先级最高
+
+
+        if(Tasks["OverRooms"] && Tasks["OverRooms"].priority)
         {
-            if(this.Tasks.length <= 1 )
-                return null;
-            else
-            {
-                highestPriorityTask.priority = 0;
-            } 
+            if(creep.room.name != Memory.OverRoomsTransfer.sourceRoomName)
+                Tasks["OverRooms"].priority = 0;
         }
 
-        for (var i = 1; i < this.Tasks.length; i++) {
-            
-            var currentTask = this.Tasks[i];
 
-            if(currentTask.target && currentTask.source && creep){
-                if(currentTask.targetAmount > currentTask.target.store[currentTask.type] && (currentTask.source.store[currentTask.type] == 0 && creep.store[currentTask.type]==0))
-                {
-                    continue;
-                }
+        for (var i = 1; i < TaskKeys.length; i++) {
+
+            var currentTask = Tasks[TaskKeys[i]];
+
+            if (currentTask.target && currentTask.source && creep) {
+
+                //if (currentTask.targetAmount > currentTask.target.store[currentTask.type] && (currentTask.source.store[currentTask.type] == 0 && creep.store[currentTask.type] == 0)) {
+                //    continue;
+                //}
             }
-            else
-            {
-                console.log(currentTask.target , currentTask.source , creep)
+            else {
+                console.log(currentTask.target, currentTask.source, creep)
                 continue;
 
             }
-            if (currentTask.targetAmount != currentTask.target.store[currentTask.type] || (creep.store[currentTask.type]!=0 && !creep.memory.send)){
-                var currentPriority = (Math.abs(currentTask.targetAmount-currentTask.target.store[currentTask.type])>1000)?(currentTask.priority * 10):(currentTask.priority)
-                var highestPriorityTaskPriority = (Math.abs(highestPriorityTask.targetAmount-highestPriorityTask.target.store[highestPriorityTask.type])>1000)?(highestPriorityTask.priority * 10):(highestPriorityTask.priority);
-           
-                if (currentPriority > highestPriorityTaskPriority) {
-                    highestPriorityTask = currentTask; // 找到更高优先级的任务
-                }
+            var currentPriority = (currentTask.priority)
+            var highestPriority = (highestPriorityTask.priority);
+
+            if (currentPriority > highestPriority) {
+                highestPriorityTask = currentTask; // 找到更高优先级的任务
             }
+            
         }
-        return highestPriorityTask;
+        if(highestPriorityTask.priority > 0)
+            return highestPriorityTask;
+        return null;
+    },
+    AddCarryTask: function (room, Taskhost, _source, _target, _priority, _resourceType, taskName = "carryTask") {
+        if (!room.memory.carryTask) room.memory.carryTask = {}
+        task = {
+            source: _source,
+            target: _target,
+            priority: _priority,
+            resourceType: _resourceType,
+        }
+        if (!room.memory[taskName]) room.memory[taskName] = {}
+        room.memory[taskName][Taskhost] = (task)
     },
 }
 
 module.exports = carryTask
 
 const STRUCTURES_TO_ENERGY_DROP = [
-    STRUCTURE_EXTENSION, 
-    STRUCTURE_SPAWN, 
+    STRUCTURE_EXTENSION,
+    STRUCTURE_SPAWN,
     STRUCTURE_TOWER
-  ];
-  
-    
-  function getEnergyStoreCapacity(structure) {
+];
+
+
+function getEnergyStoreCapacity(structure) {
     if (structure.structureType === STRUCTURE_TOWER) {
-      return structure.store.getFreeCapacity(RESOURCE_ENERGY) > 900 
-        ? structure.store.getFreeCapacity(RESOURCE_ENERGY) 
-        : 0;
+        return structure.store.getFreeCapacity(RESOURCE_ENERGY) > 900
+            ? structure.store.getFreeCapacity(RESOURCE_ENERGY)
+            : 0;
     }
     return structure.store.getFreeCapacity(RESOURCE_ENERGY);
-  }
-  
+}
+
 function EsaveEnergy(creep) {
 
 
-    let target = findClosestEnergyDropoff(creep) 
-  
+    let target = findClosestEnergyDropoff(creep)
+
     if (!target) {
-      return -1;
+        return -1;
     }
-    
+
     removeAllStoreWithoutEnergy(creep)
-    if(creep.store[RESOURCE_ENERGY]==0)
-    {
-        if(creep.withdraw(creep.room.storage,RESOURCE_ENERGY)==ERR_NOT_IN_RANGE)
+    if (creep.store[RESOURCE_ENERGY] == 0) {
+        if (creep.withdraw(creep.room.storage, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE)
             creep.moveTo(creep.room.storage)
         return;
     }
-  
-    let tranTarget = findClosestEnergyDropoff(creep) 
+
+    let tranTarget = findClosestEnergyDropoff(creep)
 
     const transferResult = creep.transfer(tranTarget, RESOURCE_ENERGY);
     if (transferResult === ERR_NOT_IN_RANGE) {
-      creep.moveTo(target, { visualizePathStyle: {} });
-    } else if (transferResult === OK) {
-      // After a successful transfer, we immediately look for the next target.
-      target = findNextClosestEnergyDropoff(creep,creep.pos,tranTarget) 
-      
-      // If there's a new target and it's not in the close range, move to it.
-      if (target && !creep.pos.inRangeTo(target, 1)) {
         creep.moveTo(target, { visualizePathStyle: {} });
-      }
+    } else if (transferResult === OK) {
+        // After a successful transfer, we immediately look for the next target.
+        target = findNextClosestEnergyDropoff(creep, creep.pos, tranTarget)
+
+        // If there's a new target and it's not in the close range, move to it.
+        if (target && !creep.pos.inRangeTo(target, 1)) {
+            creep.moveTo(target, { visualizePathStyle: {} });
+        }
     }
-  }
+}
 
-  function findClosestEnergyDropoff(creep, referencePoint = creep.pos) {
+function findClosestEnergyDropoff(creep, referencePoint = creep.pos) {
     return referencePoint.findClosestByRange(FIND_MY_STRUCTURES, {
-      filter: (structure) => 
-        STRUCTURES_TO_ENERGY_DROP.includes(structure.structureType) &&
-        getEnergyStoreCapacity(structure) > 0
+        filter: (structure) =>
+            STRUCTURES_TO_ENERGY_DROP.includes(structure.structureType) &&
+            getEnergyStoreCapacity(structure) > 0
     });
-  }
-  function findNextClosestEnergyDropoff(creep, referencePoint = creep.pos,now) {
+}
+function findNextClosestEnergyDropoff(creep, referencePoint = creep.pos, now) {
     return referencePoint.findClosestByRange(FIND_MY_STRUCTURES, {
-      filter: (structure) => 
-        STRUCTURES_TO_ENERGY_DROP.includes(structure.structureType) &&
-        getEnergyStoreCapacity(structure) > 0 && structure.id != now.id
+        filter: (structure) =>
+            STRUCTURES_TO_ENERGY_DROP.includes(structure.structureType) &&
+            getEnergyStoreCapacity(structure) > 0 && structure.id != now.id
     });
-  }
+}
 
 
-  function removeAllStoreWithoutEnergy(creep)
-  {
-    if(creep.store.getUsedCapacity()!=0)
-    {
+function removeAllStoreWithoutEnergy(creep) {
+    if (creep.store.getUsedCapacity() != 0) {
         var target = creep.room.storage;
-        if(target) {
+        if (target) {
             var count = 0;
-            for(const resourceType in creep.store) {
-                if(resourceType == RESOURCE_ENERGY)
+            for (const resourceType in creep.store) {
+                if (resourceType == RESOURCE_ENERGY)
                     continue;
                 count++
-                if(creep.transfer(target, resourceType) === ERR_NOT_IN_RANGE) {
-                    creep.moveTo(target, {visualizePathStyle: {stroke: '#ffffff'}});
+                if (creep.transfer(target, resourceType) === ERR_NOT_IN_RANGE) {
+                    creep.moveTo(target, { visualizePathStyle: { stroke: '#ffffff' } });
                     break;
                 }
             }
             return count;
         }
     }
-  }
+}

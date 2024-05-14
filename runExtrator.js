@@ -103,7 +103,7 @@ var minerManager = {
     spawnCreep: function(room, role) {
 
         const newName = role === 'MinHarvester' ? 'HM'+room.name: 'CM'+room.name;
-        const body = role === 'MinHarvester' ? {"work":20,"move":5} : {"carry":8,"move":4}; // 为不同的角色指定不同的身体部件
+        const body = role === 'MinHarvester' ? {"work":20,"move":5} : {"carry":8,"move":8}; // 为不同的角色指定不同的身体部件
         const pro = role === 'MinHarvester' ? creepManage.harvestForMineral.priority : creepManage.carrierForMineral.priority
         addSpawn(room.name,body,newName, pro)
     

@@ -52,34 +52,16 @@ const roleCarrierStorage = {
             creep.moveTo(centerLink)
         if(terminal)
             var priorityEnergy = (terminal.store.getFreeCapacity()<10000)?20:2
-        if(storage.store.getFreeCapacity()>50000)
-        var TaskList = [
-            {type:RESOURCE_ENERGY, source : storage, target :centerLink, targetAmount : 0, priority:220},
-            {type:RESOURCE_ENERGY, source : storage, target :terminal, targetAmount : 10000, priority:20},
-        ]
-        else
-        {
-            var TaskList = [
-                {type:RESOURCE_ENERGY, source : storage, target :centerLink, targetAmount : 0, priority:220},
-            ]
-        }
-        if(creep.room.name == "W55N21")
-            TaskList = [{type:RESOURCE_ENERGY, source : storage, target :centerLink, targetAmount : 0, priority:220},
-                        {type:RESOURCE_ENERGY, source : storage, target :terminal, targetAmount : 30000, priority:20},
-                        {type:"XGH2O", source : storage, target :terminal, targetAmount : 160000, priority:10},]
-        if(creep.room.name == "W13N8")
-            TaskList = [{type:RESOURCE_ENERGY, source : storage, target :centerLink, targetAmount : 800, priority:120},
-                        {type:RESOURCE_ENERGY, source : storage, target :terminal, targetAmount : 10000, priority:priorityEnergy},]
-        if(creep.room.name == "E56S52")
-            ;//TaskList = [{type:RESOURCE_ENERGY, source : storage, target :centerLink, targetAmount : 0, priority:10},]
-        carryTask.Tasks = TaskList
-        carryTask.runCarry(creep)
+        var amount = centerLink.store[RESOURCE_ENERGY]
+        var priority = (amount > 10)?10:0
+        carryTask.AddCarryTask(creep.room, "Links", centerLink.id, storage.id, priority, {"energy" : amount}, "centerCarryTask");
+        try{carryTask.runCarry(creep, false, "centerCarryTask")}catch(error){console.log("runCarry"+error)}
         return;
     }
 };
 
 
-
+ 
 const runLinks = {
 
     run: function(roomName) {

@@ -12,6 +12,7 @@ var runAttack = require('runAttack')
 var runTools = require('runTools')
 var runTower = require('runTower')
 var runLinks = require('runLinks');
+var runLabs = require('runLabs');
 
 var expansionManager = require('./expansionManager');
 var terminalManager = require('runTerminal');
@@ -36,6 +37,7 @@ module.exports.loop  = function(){
   
   if(!Memory.lowEnergyTime)Memory.lowEnergyTime = {};
   Memory.level = {}
+  try{terminalManager.manage()}  catch (error) { console.log('Error in terminalManager:', error)}
 
   for(const roomName of MainRooms)
   {
@@ -55,9 +57,9 @@ module.exports.loop  = function(){
     try{runController.run(roomName)}catch(err){console.log("runController"+err)}
     try{runTower.run(roomName)}catch(err){console.log("runTower"+err)}
     try{runLinks.run(roomName)}catch (error){console.log("runLinks"+error)}
+    try{runLabs.run(roomName)}catch (error){console.log("runLabs"+error)}
     try{minerManager.run(roomName)}catch(error){console.log("minerManager"+error)}
     try{military.run(roomName)}catch (error){console.log("military"+error)}
-    //try{terminalManager.manage(roomName)}  catch (error) { console.log('Error in terminalManager:', error)}
     try{runTools.run(roomName)}catch(error){console.log("runTools"+error)}
     try{expansionManager.manageExpansion(roomName);}catch(error){console.log(error)}
     try{runOutMining(roomName)}catch(error){console.log("runOutMining"+error)}
@@ -68,7 +70,8 @@ module.exports.loop  = function(){
     }
 
     //最后处理所有孵化请求
-    runSpawn.run(roomName);
+    try{runSpawn.run(roomName);}catch(error){console.log("runSpawn"+error)}
+    
   }
 }
 

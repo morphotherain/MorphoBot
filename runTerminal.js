@@ -1,10 +1,161 @@
 // terminalManager.js
 
 const logger = require('mylog');
+var carryTask = require('carryTask')
 
 var terminalManager =
 {
-    manage: function (roomName) {
+    resourceLimits: {
+        'H': 5000,
+        'L': 5000,
+        // 继续添加其他资源及其下限
+    },
+    resourceKeys: {
+        'H': 1000,
+        'L': 1000,
+        // 继续添加其他资源及其下限
+    },
+    manage: function () {
+        const rooms = Game.rooms;
+        
+        // Step 1: 维护每个房间超出上限的资源类型
+        for (const roomName in rooms) {
+            const room = rooms[roomName];
+            if (room.storage && room.terminal) {
+                room.memory.excessResources = room.memory.excessResources || {};
+                for (const resourceType in this.resourceLimits) {
+                    const terminalAmount = room.terminal.store[resourceType] || 0;
+                    const storageAmount = room.storage.store[resourceType] || 0;
+                    const totalAmount = storageAmount + terminalAmount;
+                    const resourceLimit = this.resourceLimits[resourceType];
+
+                    if (totalAmount > resourceLimit) {
+                        room.memory.excessResources[resourceType] = totalAmount - resourceLimit;
+                    } else {
+                        delete room.memory.excessResources[resourceType];
+                    }
+                }
+            }
+        }
+
+        // Step 2: 维护每个房间用于发送的能量
+        for (const roomName in rooms) {
+            const room = rooms[roomName];
+            if (room.storage && room.terminal) {
+                const terminalEnergyAmount = room.terminal.store["energy"];
+                const storageEnergyAmount = room.storage.store["energy"];
+        
+                // 维护能量任务
+                if (storageEnergyAmount >= 20000 && terminalEnergyAmount <= 10000) {
+                    carryTask.AddCarryTask(
+                        room,
+                        "Terminal",
+                        room.storage.id,
+                        room.terminal.id,
+                        6, // 优先级, 越大表示优先程度越高
+                        {["energy"]: 10000 - terminalEnergyAmount},
+                        "centerCarryTask"
+                    );
+                    console.log(`<span style='color: yellow;'>[TerminalManager]</span> ${roomName} is transferring energy to terminal.`);
+                }
+                else{
+                    if (terminalEnergyAmount >= 15000) {
+                        carryTask.AddCarryTask(
+                            room,
+                            "Terminal",
+                            room.terminal.id,
+                            room.storage.id,
+                            6, // 优先级, 越大表示优先程度越高
+                            {["energy"]: terminalEnergyAmount-15000},
+                            "centerCarryTask"
+                        );
+                    }
+                }
+            }
+        }   
+
+        // Step 4: 维护资源从terminal到storage的传输任务
+        for (const roomName in rooms) {
+            const room = rooms[roomName];
+            if (room.storage && room.terminal) {
+                for (const resourceType in room.terminal.store) {
+                    if (resourceType !== "energy" && room.terminal.store[resourceType] > 0) {
+                        carryTask.AddCarryTask(
+                            room,
+                            "TerminalToStorage",
+                            room.terminal.id,
+                            room.storage.id,
+                            4, // 优先级, 越大表示优先程度越高
+                            { [resourceType]: room.terminal.store[resourceType] },
+                            "centerCarryTask"
+                        );
+                        console.log(`<span style='color: yellow;'>[TerminalManager]</span> ${roomName} is transferring ${resourceType} from terminal to storage.`);
+                        break; // 同一tick内仅处理第一个符合条件的任务
+                    }
+                }
+            }
+        }
+
+        // Step 3: 尝试找到需要资源的房间并发送
+        for (const roomName in rooms) {
+            const room = rooms[roomName];
+            if (room.storage && room.terminal) {
+                for (const resourceType in this.resourceLimits) {
+                    const terminalAmount = room.terminal.store[resourceType] || 0;
+                    const storageAmount = room.storage.store[resourceType] || 0;
+                    const totalAmount = storageAmount + terminalAmount;
+                    const resourceLimit = this.resourceLimits[resourceType];
+                    const resourceKey = this.resourceKeys[resourceType];
+
+                    if (totalAmount < resourceLimit - resourceKey) {
+                        // 在其他房间中查找超出上限的资源
+                        for (const sourceRoomName in rooms) {
+                            const sourceRoom = rooms[sourceRoomName];
+                            if (!sourceRoom.controller || !sourceRoom.controller.my || !sourceRoom.storage || !sourceRoom.terminal) {
+                                continue; // 跳过不符合条件的房间
+                            }
+                            if (sourceRoom !== room && sourceRoom.memory.excessResources && sourceRoom.memory.excessResources[resourceType]) {
+                                const excessAmount = sourceRoom.memory.excessResources[resourceType];
+                                if(excessAmount < resourceKey)continue;//跳过溢出资源过少的房间
+
+                                //不能大于超出数量, 不能大于缺口数量, 不能大于终端剩余容量
+                                const sendAmount = Math.min(excessAmount, resourceLimit - totalAmount, sourceRoom.terminal.store.getFreeCapacity()+sourceRoom.terminal.store[resourceType]);
+                                if(sourceRoom.terminal.store[resourceType] >= sendAmount) {
+                                    const result = sourceRoom.terminal.send(resourceType, sendAmount, roomName);
+                                    console.log(`<span style='color: yellow;'>[TerminalManager]</span> Find ${sourceRoomName} sent  ${resourceType} to ${roomName}`);
+                                    if (result === OK) {
+                                        console.log(`<span style='color: green;'>[TerminalManager]</span> ${sourceRoomName} sent ${sendAmount} ${resourceType} to ${roomName}`);
+                                    } else {
+                                        console.log(`<span style='color: red;'>[TerminalManager]</span> ${sourceRoomName} failed to send ${sendAmount} ${resourceType} to ${roomName}. Error: ${result}`);
+                                    }
+                                }
+                                else{
+                                    
+                                    console.log(`<span style='color: yellow;'>[TerminalManager]</span> Find ${sourceRoomName} prepare  ${resourceType} to ${roomName}`);
+                                    Memory.OverRoomsTransfer = Memory.OverRoomsTransfer || {}
+                                    Memory.OverRoomsTransfer.sourceRoomName = sourceRoomName;
+                                    Memory.OverRoomsTransfer.resourceType = resourceType;
+                                    carryTask.AddCarryTask(
+                                        sourceRoom,
+                                        "OverRooms",
+                                        sourceRoom.storage.id,
+                                        sourceRoom.terminal.id,
+                                        5,
+                                        {[resourceType] : sendAmount - sourceRoom.terminal.store[resourceType]},
+                                        "centerCarryTask");
+
+                                }
+                                return; // 发送后立即退出manage过程
+                            }
+                        }
+                        console.log(`<span style='color: red;'>[TerminalManager]</span> Failed to find  ${resourceType} for ${roomName}.`);
+                    }
+                }
+            }
+        }
+
+        
+        return;
         var terminal = Game.rooms[roomName].terminal
         if(!terminal || Game.time%100 != 0)return;
         // 用户定义的规则
@@ -106,8 +257,6 @@ var terminalManager =
 
         }
         
-        // ...（其他资源的最优化处理）
-        // ...
     }
 };
 
