@@ -1,5 +1,5 @@
 
-var utils = require('util')
+var utils = require('utilFun')
 
 var addSpawn = require('addSpawn')
 var creepManagers = require('creepManagers')
@@ -13,6 +13,16 @@ var runController = {
     var roomBuildings = Memory.rooms[roomName].buildings
 
     theRoomName = roomName
+
+    var maxWork = 1;
+    var maxMove = 1;
+    var saveEnergyMode = true;
+    if(Game.rooms[roomName] && Game.rooms[roomName].storage && Game.rooms[roomName].storage.store.getFreeCapacity()<50000){
+      maxWork = 15;
+      maxMove = 10;
+      saveEnergyMode = false;
+    }
+
     var creepBodys = {
       carriers:{
         0:{'carry':2,'move':2 },
@@ -23,7 +33,7 @@ var runController = {
         5:{'carry':16,'move':8},
         6:{'carry':16,'move':8},
         7:{'carry':24,'move':12},
-        8:{'carry':2,'move':1},
+        8:{'carry':maxMove*2,'move':maxMove},
         priority : creepManage.carrierForUpgrade.priority
       },
       upgraders:{
@@ -35,7 +45,7 @@ var runController = {
         5:{'work':15,'move':3,'carry':3},
         6:{'work':15,'move':8,'carry':4},
         7:{'work':15,'move':10,'carry':4},
-        8:{'work':1,'move':1,'carry':4},
+        8:{'work':maxWork,'move':maxMove,'carry':4},
         priority : creepManage.upgraders.priority
       },
     }
@@ -73,7 +83,7 @@ var runController = {
     });
     }
     
-    var ignoreCreep = true;
+    var ignoreCreep = false;
     if(memory.constructureSitesNum > 0)ignoreCreep = false
     var getEnergy = function(creep,i)
     {
@@ -141,6 +151,8 @@ var runController = {
 
 
     var upgrade = function(creep){
+      
+      if(level == 8 && saveEnergyMode && creep.pos.inRangeTo(creep.room.controller,3) && Game.time%10 != 0 )return;
 
       //if(creep.room.name == "W55N21"){
       //  if(boostCreep(creep,roomBuildings.Labs))
@@ -205,7 +217,7 @@ var runController = {
        
     }
     var countU = memory.controller.upgradersNum
-    for(var i = 0;i<(countU>4?countU:4);i++){
+    for(var i = 0;i<(countU>5?countU:5);i++){
       var name = (memory.controller.upgraders[0]+i)
       if(Game.creeps[name+"Day"] != undefined)
       {

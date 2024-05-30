@@ -1,4 +1,4 @@
-var utils = require('util')
+var utils = require('utilFun')
 var MemoryDataset = require('MemorySystem')
 
 var runSource = require('runSource')
@@ -9,6 +9,8 @@ var runOutSource = require('runOutSource')
 var runDangerSource = require('runDangerSource')
 var runReserver = require('runReserver')
 var runAttack = require('runAttack')
+var runDrone = require('runDrone')
+var runTeam2 = require('runTeam2')
 var runTools = require('runTools')
 var runTower = require('runTower')
 var runLinks = require('runLinks');
@@ -27,8 +29,7 @@ var roomRefuge = require('roomRefuge')
 
 module.exports.loop  = function(){
 
-  Game.cpu.generatePixel()
-
+  try{Game.cpu.generatePixel()}catch(e){}
   var MainRooms = MemoryDataset.getMyRooms()
 
   if (Game.time % 1500 === 0) {
@@ -36,7 +37,7 @@ module.exports.loop  = function(){
   }
   
   if(!Memory.lowEnergyTime)Memory.lowEnergyTime = {};
-  Memory.level = {}
+  Memory.level = Memory.level || {}
   try{terminalManager.manage()}  catch (error) { console.log('Error in terminalManager:', error)}
 
   for(const roomName of MainRooms)
@@ -61,12 +62,14 @@ module.exports.loop  = function(){
     try{minerManager.run(roomName)}catch(error){console.log("minerManager"+error)}
     try{military.run(roomName)}catch (error){console.log("military"+error)}
     try{runTools.run(roomName)}catch(error){console.log("runTools"+error)}
-    try{expansionManager.manageExpansion(roomName);}catch(error){console.log(error)}
+    try{runDrone.run(roomName);}catch(error){console.log("runDrone"+error);}
+    try{runTeam2.run(roomName);}catch(error){console.log("runTeam2"+error);}
+    try{expansionManager.manageExpansion(roomName);}catch(error){console.log("expansionManager"+error)}
     try{runOutMining(roomName)}catch(error){console.log("runOutMining"+error)}
 
     if(MemoryDataset.roomDangerNames[roomName])
     for(const roomDangerName of MemoryDataset.roomDangerNames[roomName]) {
-      try {runDangerSource.run(roomName,roomDangerName)}catch(error) {console.log(error)}
+      try {runDangerSource.run(roomName,roomDangerName)}catch(error) {console.log("runDangerSource"+error)}
     }
 
     //最后处理所有孵化请求
@@ -93,11 +96,11 @@ function runOutMining(roomName)
     }
   }
   for(const roomOutName of roomOutNames) {
-    try{runOutSource.run(roomName, roomOutName);}catch(error){console.log(error);}
-    try{runReserver.run(roomName, roomOutName);}catch(error){console.log(error);}
+    try{runOutSource.run(roomName, roomOutName);}catch(error){console.log("runOutSource"+error);}
+    try{runReserver.run(roomName, roomOutName);}catch(error){console.log("runReserver"+error);}
   }
-  try {runAttack.run(roomOutNames,roomName);}catch(error){console.log(error);}
-  try {roomRefuge.checkAndEvacuate(roomOutNames,roomName)}catch(error){console.log(error);}
+  try {runAttack.run(roomOutNames,roomName);}catch(error){console.log("runAttack"+error);}
+  try {roomRefuge.checkAndEvacuate(roomOutNames,roomName)}catch(error){console.log("roomRefuge"+error);}
 }
 
 function cleanUpCreepMemory() {

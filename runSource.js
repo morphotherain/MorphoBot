@@ -1,5 +1,5 @@
 
-var utils = require('util')
+var utils = require('utilFun')
 
 var addSpawn = require('addSpawn')
 var creepManagers = require('creepManagers')
@@ -47,7 +47,7 @@ var runSource =
             i = i*2;
             var containersID = [roomBuildings.Containers[0],roomBuildings.Containers[1]]
 
-            var index = (level>=8)?((Game.time%300)<150?(0):1):(i%2)
+            var index = (i%2)
             var sourceID = memory.source.sourcesID[index]
             if(creep.harvest(Game.getObjectById(sourceID))==ERR_NOT_IN_RANGE)
                 creep.moveTo(Game.getObjectById(sourceID))
@@ -103,9 +103,6 @@ var runSource =
             count = memory.source.sourcesID.length*times
         }
                     
-
-        if(level == 8)
-            count = 1;
         for(var i = 0;i<6;i++){
             if(times > 1)
                 var index = ((i<((source1Num>3)?3:source1Num))?0:1)

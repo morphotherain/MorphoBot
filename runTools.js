@@ -1,5 +1,5 @@
 
-var utils = require('util')
+var utils = require('utilFun')
 
 var addSpawn = require('addSpawn')
 var RoomInit = require('Init')

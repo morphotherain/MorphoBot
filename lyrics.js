@@ -296,10 +296,10 @@ var sing = {
         const currentLyricJP = lyricsArrayJP[creep.memory.currentLyricIndex];
 
         // 说出当前歌词
-        creep.say(currentLyricJP, true);
+        creep.say(currentLyricCN, true);
 
         // 在creep的当前位置绘制歌词（创建泡泡效果）
-        creep.room.visual.text(currentLyricCN, creep.pos.x, creep.pos.y, {
+        creep.room.visual.text(currentLyricJP, creep.pos.x, creep.pos.y, {
             align: 'center',
             opacity: 2.8,
             color:'#FFFFFF' // 设置歌词颜色

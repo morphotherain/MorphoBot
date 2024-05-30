@@ -1,5 +1,5 @@
 
-var utils = require('util')
+var utils = require('utilFun')
 
 var addSpawn = require('addSpawn')
 var creepManage = require('creepManage')
@@ -53,7 +53,8 @@ var roleCarrier = {
                 }
 
             } else {
-                var target = creep.room.storage;
+                var target = creep.room.terminal;
+                if(!target) target = creep.room.storage;
                 if(target) {
                     for(const resourceType in creep.store) {
                         if(creep.transfer(target, resourceType) === ERR_NOT_IN_RANGE) {
@@ -73,8 +74,10 @@ var minerManager = {
     run: function(roomName) {
         var room = Game.rooms[roomName]
         // 定义harvester和carrier的数量
+        var level = Memory.level[roomName]
+        if(level < 6)return;
         ManageStructure(roomName)
-        if(!structures.extrator || !structures.mineral || structures.mineral.mineralAmount==0 || (room.storage && room.storage.store.getFreeCapacity()< 200000 ))
+        if(!structures.extrator || !structures.mineral || structures.mineral.mineralAmount==0 || (room.storage && room.storage.store.getFreeCapacity()< 20000 ))
             return;
         var harvesterNight = Game.creeps['HM'+room.name+"Night"]
         var carrierNight = Game.creeps['CM'+room.name+"Night"];

@@ -318,10 +318,6 @@ var utils =
 
   recycleCreep: function (creep, roomName) {
     creep.say("Go die!")
-    if (creep.room.name != roomName) {
-      this.moveOverRoomsEX(creep.room.name, roomName, creep)
-      return;
-    }
     var spawn1 = Game.rooms[roomName].find(STRUCTURE_SPAWN)
     if (spawn1.length > 0) {
       if (spawn.recycleCreep(creep) == ERR_NOT_IN_RANGE)

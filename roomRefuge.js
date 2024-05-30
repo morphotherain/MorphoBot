@@ -1,5 +1,5 @@
 const UNSAFE_TICKS_THRESHOLD = 10;
-var utils = require('util')
+var utils = require('utilFun')
 
 const logger = require('mylog');
 

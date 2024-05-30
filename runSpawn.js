@@ -1,4 +1,4 @@
-var utils = require('util')
+var utils = require('utilFun')
 var addSpawn = require('addSpawn')
 var dataset = require('data')
 var creepManagers = require('creepManagers')
@@ -12,6 +12,7 @@ var runSpawn =
 {
   run : function(roomName)
   {
+    if(roomName == Memory.expansionConfig.targetRoom && Memory.level[roomName]<2)return ;
     if(!Game.flags["carrierSleep"+roomName])Game.rooms[roomName].createFlag(25, 25, "carrierSleep"+roomName);
 
     var creepManage = creepManagers.Manage(roomName)
@@ -71,6 +72,7 @@ var runSpawn =
     var level = Memory.level[roomName]
 
     var memory = utils.getRoomMem(roomName);
+    var ignoreCreep = false;
     delete memory.spawns
     if(memory.spawns == undefined || Game.time%10==2)
     {
@@ -90,6 +92,7 @@ var runSpawn =
 
     if(level >= 6 && Game.rooms[roomName].terminal != undefined )
     {
+      ignoreCreep = false;
       memory.spawns.EcarriersNum = 0;
       memory.spawns.AdvaceCarriersAccept = true;
     }
@@ -116,7 +119,6 @@ var runSpawn =
           var result = creep.withdraw(container, RESOURCE_ENERGY);
           if (result == ERR_NOT_IN_RANGE) {
             // 如果不在范围内，移动到容器附近
-            var ignoreCreep = true;
             if(creep.room.memory.constructureSitesNum > 0)ignoreCreep = false
             creep.moveTo(container,{visualizePathStyle:{},reusePath:50,ignoreCreeps: ignoreCreep});
           }
@@ -293,7 +295,7 @@ var runSpawn =
       }
 
     }
-    console.log("runSpawn.js[LOG]: "+"memory.spawn.priority",memory.spawn.priority)
+    //console.log("runSpawn.js[LOG]: "+"memory.spawn.priority",memory.spawn.priority)
     if(memory.spawn.priority != 0)
     { 
       console.log("runSpawn.js[LOG]:"+dataset.createCreepBodys(memory.spawn.creepBody),"silver")

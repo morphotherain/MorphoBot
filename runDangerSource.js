@@ -1,9 +1,9 @@
 
-var utils = require('util')
+var utils = require('utilFun')
 
 var addSpawn = require('addSpawn')
 var creepManagers = require('creepManagers')
-const { moveOverRoomsEX } = require('./util')
+const { moveOverRoomsEX } = require('./utilFun')
 var RoomInit = require('Init')
 const logger = require('mylog');
 const energyManager = require('assignDropEnergy');

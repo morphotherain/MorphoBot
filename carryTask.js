@@ -28,7 +28,6 @@ var carryTask =
             }
             return;
         }
-        task.priority = 0;
 
         var tranSource = Game.getObjectById(task.source)
         var tranTarget = Game.getObjectById(task.target)
@@ -45,15 +44,23 @@ var carryTask =
             }
         }
 
-        console.log("carryTask[LOG]:", creep.name, "  ", tranSource, " ", tranTarget, " ", tranType);
+        //console.log("carryTask[LOG]:", creep.name, "  ", tranSource, " ", tranTarget, " ", tranType);
 
         var moveTarget = 0
 
         if (creep.store[tranType] == 0 && creep.ticksToLive > 30) creep.memory.full = false;
         else creep.memory.full = true;
         if (creep.memory.full) {
-            if (creep.transfer(tranTarget, tranType) == ERR_NOT_IN_RANGE)
+            var ans = creep.transfer(tranTarget, tranType);
+            //console.log("carryTask[LOG]:", creep.name, " ans ", ans);
+            if (ans == ERR_NOT_IN_RANGE)
                 moveTarget = tranTarget
+            if (ans == OK)
+            {
+                var host = task.Taskhost;                
+                creep.room.memory[taskName][host].recent_changed_cooldown = 0;
+                task.priority = 0;
+            }
         }
         else {
             var ans = creep.withdraw(tranSource, tranType, tranAmount)
@@ -83,6 +90,7 @@ var carryTask =
         var TaskKeys = Object.keys(Tasks)
         var highestPriorityTask = Tasks[TaskKeys[0]]; // 初始假设第一个任务优先级最高
 
+        //console.log("carryTask[LOG]:", TaskKeys[0], "  ", Object.keys(highestPriorityTask.resourceType)[0]);
 
         if(Tasks["OverRooms"] && Tasks["OverRooms"].priority)
         {
@@ -90,6 +98,45 @@ var carryTask =
                 Tasks["OverRooms"].priority = 0;
         }
 
+        // 用于存储符合条件的任务键
+        var matchingTaskKeys = [];
+        var tranType = Object.keys(creep.store)[0]; // 获取 Creep 当前持有的资源类型
+
+        // 迭代所有任务，检查资源类型是否匹配
+        for (var i = 0; i < TaskKeys.length; i++) {
+            var taskId = TaskKeys[i];
+            var task = Tasks[taskId];
+            
+            // 检查任务是否需要与 Creep 当前持有的资源类型匹配
+            if (task.resourceType && Object.keys(task.resourceType)[0] === tranType) {
+                matchingTaskKeys.push(taskId); // 将匹配的任务键存储起来
+            }
+        }
+
+        if(matchingTaskKeys.length > 0)
+        {
+            //console.log("!!!!!matchingTaskKeys"+matchingTaskKeys.length)
+            highestPriorityTask =  Tasks[matchingTaskKeys[0]];
+            for (var i = 1; i < matchingTaskKeys.length; i++) {
+
+                var currentTask = Tasks[matchingTaskKeys[i]];
+                if (currentTask.target && currentTask.source && creep) {
+                }
+                else {
+                    //console.log(currentTask.target, currentTask.source, creep)
+                    continue;
+    
+                }
+                var currentPriority = (currentTask.priority)
+                var highestPriority = (highestPriorityTask.priority);
+    
+                if (currentPriority > highestPriority) {
+                    highestPriorityTask = currentTask; // 找到更高优先级的任务
+                }
+                
+            }
+            return highestPriorityTask;
+        }
 
         for (var i = 1; i < TaskKeys.length; i++) {
 
@@ -97,12 +144,9 @@ var carryTask =
 
             if (currentTask.target && currentTask.source && creep) {
 
-                //if (currentTask.targetAmount > currentTask.target.store[currentTask.type] && (currentTask.source.store[currentTask.type] == 0 && creep.store[currentTask.type] == 0)) {
-                //    continue;
-                //}
             }
             else {
-                console.log(currentTask.target, currentTask.source, creep)
+                //console.log(currentTask.target, currentTask.source, creep)
                 continue;
 
             }
@@ -118,16 +162,27 @@ var carryTask =
             return highestPriorityTask;
         return null;
     },
-    AddCarryTask: function (room, Taskhost, _source, _target, _priority, _resourceType, taskName = "carryTask") {
+    AddCarryTask: function (room, _Taskhost, _source, _target, _priority, _resourceType, taskName = "carryTask") {
         if (!room.memory.carryTask) room.memory.carryTask = {}
         task = {
             source: _source,
             target: _target,
             priority: _priority,
             resourceType: _resourceType,
+            recent_changed_cooldown: (_priority==0)?0:100,
+            Taskhost : _Taskhost
         }
         if (!room.memory[taskName]) room.memory[taskName] = {}
-        room.memory[taskName][Taskhost] = (task)
+        if (!room.memory[taskName][_Taskhost]){
+            room.memory[taskName][_Taskhost] = (task)
+            return;
+        }
+        if(room.memory[taskName][_Taskhost].recent_changed_cooldown > 0)
+        {
+            room.memory[taskName][_Taskhost].recent_changed_cooldown = room.memory[taskName][_Taskhost].recent_changed_cooldown - 1;
+            return;
+        }
+        room.memory[taskName][_Taskhost] = (task)
     },
 }
 

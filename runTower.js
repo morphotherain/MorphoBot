@@ -1,5 +1,5 @@
 
-var utils = require('util')
+var utils = require('utilFun')
 var RoomInit = require('Init')
 
 var runTower = 
@@ -7,7 +7,7 @@ var runTower =
  {
     run : function(roomName)
     {
-
+        if(Game.time%10!=0)return;
         var memory = utils.getRoomMem(roomName);
         if(memory.tower == undefined || Game.time%100==0)
         {
@@ -33,7 +33,7 @@ var runTower =
             });
         }
         var closestHostile = controller.pos.findClosestByRange(FIND_HOSTILE_CREEPS ,{filter : function(creep){
-            return creep.owner.username != "joe95" || creep.owner.username != "idrusoh" ||  creep.owner.username != "IceDream"
+            return creep.owner.username != "joe95" || creep.owner.username != "MerlinMan5" ||  creep.owner.username != "IceDream"
         }});
         var TowerOperator = function(towerID){
             var tower = Game.getObjectById(towerID)

@@ -123,40 +123,45 @@ var buildingMgr = {
         let containers = room.find(FIND_STRUCTURES, {
             filter: (s) => s.structureType === STRUCTURE_CONTAINER
         });
-        // Controller 3格内的 Containers
-        let controllerContainers = containers.filter((container) => {
-            return room.controller.pos.inRangeTo(container.pos, 3);
+        let sources = Memory.rooms[room.name].source.sourcesID.map(s => Game.getObjectById(s)).filter(Boolean); // 过滤掉 null 值
+
+        // 获取 source 一格内的 Containers
+        let sourceContainers = [];
+        sources.forEach(source => {
+            sourceContainers = sourceContainers.concat(containers.filter(container => source.pos.inRangeTo(container.pos, 1)));
         });
-        if(controllerContainers.length > 0)
-            Memory.rooms[room.name].buildings["Containers"][2] = controllerContainers[0].id
-        
+
+        // Controller 三格内的 Containers
+        let controllerContainers = containers.filter(container => {
+            return room.controller.pos.inRangeTo(container.pos, 3) && !sourceContainers.includes(container);
+        });
+        if (controllerContainers.length > 0)
+            Memory.rooms[room.name].buildings["Containers"][2] = controllerContainers[0].id;
+
         // Mineral 一格内的 Containers
         let mineralContainers = [];
         let minerals = room.find(FIND_MINERALS);
 
-        Memory.rooms[room.name].buildings["Mineral"] = minerals[0].id
+        Memory.rooms[room.name].buildings["Mineral"] = minerals[0].id;
 
-        minerals.forEach((mineral) => {
-            let nearbyContainers = containers.filter((container) => {
+        minerals.forEach(mineral => {
+            let nearbyContainers = containers.filter(container => {
                 return mineral.pos.inRangeTo(container.pos, 1);
             });
             mineralContainers = mineralContainers.concat(nearbyContainers);
         });
-        if(mineralContainers.length > 0)
-            Memory.rooms[room.name].buildings["Containers"][3] = mineralContainers[0].id
-        
-        let sources = Memory.rooms[room.name].source.sourcesID.map(s => Game.getObjectById(s)).filter(Boolean); // 过滤掉 null 值
-        
+        if (mineralContainers.length > 0)
+            Memory.rooms[room.name].buildings["Containers"][3] = mineralContainers[0].id;
+
         // 每个 Source 一格内的 Containers
         if (!Memory.rooms[room.name] || !Memory.rooms[room.name].source || !Memory.rooms[room.name].source.sourcesID) {
             // 初始化或处理错误
             // 例如: return; 或 Memory.rooms[room.name].source.sourcesID = [];
-        }
-        else{
+        } else {
             for (var i = 0; i < sources.length; i++) {
                 if (!sources[i]) continue; // 检查是否成功获取 source 对象
 
-                let nearbyContainers = containers.filter((container) => {
+                let nearbyContainers = containers.filter(container => {
                     return sources[i].pos.inRangeTo(container.pos, 1);
                 });
 
@@ -166,6 +171,7 @@ var buildingMgr = {
                     Memory.rooms[room.name].buildings["Containers"][i] = "";
             }
         }
+
 
         //  Links  //
         let links = room.find(FIND_STRUCTURES, {
@@ -229,6 +235,7 @@ var buildingMgr = {
             Factory : "",
         }
         var roomBuildings = Memory.rooms[roomName].buildings
+        if(!roomBuildings)return structures;
         var Labs = roomBuildings.Labs;
         var Nuker = roomBuildings.Nuker;
         var PowerSpawn = roomBuildings.PowerSpawn;

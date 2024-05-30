@@ -1,7 +1,7 @@
 //引入工具模块
 //1. 使用获取内存功能getRoomMemory
 //2. 使用回收creep功能recycleCreep
-var utils = require('util')
+var utils = require('utilFun')
 //引入孵化模块, 使用计划孵化功能
 var addSpawn = require('addSpawn')
 //引入爬爬管理模块, 使用数量统一管理
@@ -11,6 +11,17 @@ var RoomInit = require('Init')
 //引入拾取分配模块, 使用能量拾取分配功能
 const energyManager = require('assignDropEnergy');
 
+function checkForInvaderCore(roomName) {
+   const room = Game.rooms[roomName];
+   if (room) {
+      const hostileStructures = room.find(FIND_HOSTILE_STRUCTURES, {
+           filter: (structure) => structure.structureType === STRUCTURE_INVADER_CORE
+       });
+      room.memory.hasInvaderCore = hostileStructures.length > 0;
+   } else {
+      console.log(`Room ${roomName} not visible.`);
+   }
+}
 
 var runOutSource = {
    run : function(roomName,roomSourceName){
@@ -20,6 +31,9 @@ var runOutSource = {
    ////
    var roomBuildings = Memory.rooms[roomName].buildings
    ////
+
+   checkForInvaderCore(roomSourceName)
+
    if(!Memory.hasConstructionSitesOut)
       Memory.hasConstructionSitesOut = {};
    
@@ -594,7 +608,27 @@ var runOutSource = {
       }
       }
       moveToTarget(creep,moveTarget);
-   }      
+      // 在 Creep 的逻辑中
+      if (!creep.memory.lastPos) {
+         creep.memory.lastPos = { x: creep.pos.x, y: creep.pos.y, stuckCount: 0 };
+      } else {
+         // 检查 Creep 是否移动
+         if (creep.memory.lastPos.x === creep.pos.x && creep.memory.lastPos.y === creep.pos.y) {
+         // Creep 没有移动，增加 stuck 计数
+         creep.memory.lastPos.stuckCount++;
+         // 连续两个 tick 没有移动，则清除缓存路径
+         if (creep.memory.lastPos.stuckCount >= 10) {
+            delete creep.memory.cachedPath;
+            creep.cancelOrder("move")
+            if(!creep.pos.inRangeTo(creep.room.controller, 2))
+               creep.moveTo(creep.room.controller)
+         }
+         } else {
+         // Creep 移动了，重置 stuck 计数
+         creep.memory.lastPos = { x: creep.pos.x, y: creep.pos.y, stuckCount: 0 };
+         }
+      }
+      }      
    //孵化矿工
    
    var times = 1

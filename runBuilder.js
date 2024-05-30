@@ -1,7 +1,7 @@
 
 
 const logger = require('mylog');
-var utils = require('util')
+var utils = require('utilFun')
 
 var addSpawn = require('addSpawn')
 var creepManagers = require('creepManagers');
@@ -30,18 +30,18 @@ var runBuilder = {
         5:{'carry':10,'move':5},
         6:{'carry':16,'move':8},
         7:{'carry':16,'move':8},
-        8:{'carry':24,'move':12},
+        8:{'carry':16,'move':8},
         priority : creepManage.carrierForBuilder.priority
       },
       builders:{
         1:{'work':1,'move':2,'carry':1},
         2:{'work':2,'move':3,'carry':4},
         3:{'work':3,'move':5,'carry':5},
-        4:{'work':5,'move':5,'carry':5},
-        5:{'work':5,'move':5,'carry':15},
-        6:{'work':5,'move':5,'carry':15},
-        7:{'work':5,'move':5,'carry':15},
-        8:{'work':30,'move':15,'carry':5},
+        4:{'work':3,'move':5,'carry':5},
+        5:{'work':3,'move':5,'carry':15},
+        6:{'work':3,'move':5,'carry':15},
+        7:{'work':3,'move':5,'carry':15},
+        8:{'work':3,'move':15,'carry':5},
         priority : creepManage.builder.priority
       },
       
@@ -65,15 +65,17 @@ var runBuilder = {
     if(level == 0)return;
 
     creepManage.builder.update(roomName);
-
-    var findEnergyDropoff = function (creep) {
-      return creep.room.find(FIND_MY_CREEPS, {
+    
+    var findEnergyDropoff = function (room) {
+      return room.find(FIND_MY_CREEPS, {
           filter: (creep) => {
               return (creep.name[0]=='b' &&
                       creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0)
           }
       });
     }
+
+    var targets = 0;
 
     var getEnergy = function(creep,i)
     {
@@ -120,9 +122,11 @@ var runBuilder = {
       }
     }
     var saveEnergy = function (creep) {
-      var targets = findEnergyDropoff(creep)
-
-      targets.sort((a, b) => a.store[RESOURCE_ENERGY] - b.store[RESOURCE_ENERGY]);
+      if(targets == 0)
+      {
+        targets = findEnergyDropoff(Game.rooms[roomName])
+        targets.sort((a, b) => a.store[RESOURCE_ENERGY] - b.store[RESOURCE_ENERGY]);
+      }
       if (targets[0] != null) {
         creep.say("save!")
         if (creep.transfer(targets[0], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE)

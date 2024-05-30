@@ -15,7 +15,7 @@ var creepManagers = {
         if(constructureSites.length > 0)
         {
             builder.buildersNum = 2;
-            builder.carriersNum = 2;
+            builder.carriersNum = 1;
             controller.upgradersNum = 0;
             controller.carriersNum = 0;
             if(room.controller.level < 4)
@@ -46,7 +46,7 @@ var creepManagers = {
             if(room.storage && room.storage.store["energy"]>100000)
             {
                 room.memory.startUpgrade = true;
-                if(room.storage && room.storage.store["energy"]>200000){
+                if(room.storage && room.storage.store["energy"]>150000){
                     if(!memory.controller.containerFull)memory.controller.containerFull = 0;//初始化
 
                     memory.controller.containerFull++;

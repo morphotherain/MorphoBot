@@ -1,5 +1,5 @@
 
-var utils = require('util')
+var utils = require('utilFun')
 
 var addSpawn = require('addSpawn')
 var creepManagers = require('creepManagers')
@@ -116,8 +116,9 @@ var runReserver =
             }
             if( (Game.rooms[roomSourceName] != undefined) 
                 &&
-                ((Game.rooms[roomSourceName].controller.reservation == undefined ||
-                 Game.rooms[roomSourceName].controller.reservation.ticksToEnd<1000))
+                ((Game.rooms[roomSourceName].controller.reservation == undefined) ||
+                 (Game.rooms[roomSourceName].controller.reservation.ticksToEnd<1000) || 
+                 (Game.rooms[roomSourceName].controller.reservation.username == 'Invader'))
                 &&
                 ( (!Game.rooms[roomSourceName]) || !Game.rooms[roomSourceName].controller.my )
             )

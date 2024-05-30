@@ -1,6 +1,6 @@
 
 var addSpawn = require('addSpawn')
-var util = require('util')
+var util = require('utilFun')
 const logger = require('mylog');
 var creepManagers = require('creepManagers')
 
@@ -15,6 +15,10 @@ const expansionConfig = {
 };
 
 function manageExpansion(roomName) {
+  Memory.expansionConfig = Memory.expansionConfig || {sourceRoom:"", targetRoom:""};
+  expansionConfig.sourceRoom = Memory.expansionConfig.sourceRoom;
+  expansionConfig.targetRoom = Memory.expansionConfig.targetRoom;
+
   if(roomName != expansionConfig.sourceRoom)return ;
   if(expansionConfig.targetRoom == '')return;
   var creepManage = creepManagers.Manage(roomName)
@@ -43,9 +47,22 @@ function manageExpansion(roomName) {
       }
     }
   } else {
+    
+    var level = Memory.level[expansionConfig.targetRoom]
+    if(level < 2)
+    {
+      console.log("等级过低")
+      addSpawn(expansionConfig.targetRoom, {"claim":10, "move":50},expansionConfig.targetRoom, 100, { role: 'builder', targetRoom: expansionConfig.targetRoom },true);
+    }
+    else
+    {
+      console.log("等级过高", level, expansionConfig.targetRoom)
+      return;
+    }
     // 目标房间已被占领，孵化援建creep
     for(var i = 0; i<4; i++) //存在第二个矿
     {
+      
       const builder = Game.creeps[expansionConfig.builderName+i];
       
       if (!builder && true) {
@@ -74,10 +91,10 @@ function manageExpansion(roomName) {
       }
     }
     
-    if(Game.spawns["Spawn2"]!= undefined)
-    {
-      KeepLife(Game.spawns["Spawn2"])
-    }
+    //if(Game.spawns["Spawn2"]!= undefined)
+    //{
+    //  KeepLife(Game.spawns["Spawn2"])
+    //}
   }
   {
     // 目标房间已被占领，孵化援建creep
